@@ -1,0 +1,22 @@
+type RegisteredPlayers @model @auth(rules: [{allow: public}]) {
+  id: ID!
+  firstname: String
+  lastname: String
+  teamname: String
+  division: String
+  season: String
+  position: String
+  captain: String
+  email: String
+  phonenumber: String
+  instagramhandle: String
+}
+
+type RegisteredTeams @model @auth(rules: [{allow: public}]) {
+  id: ID!
+  teamname: String
+  season: String
+  divison: String
+  year: String
+}
+ 
