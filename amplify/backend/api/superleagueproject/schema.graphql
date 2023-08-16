@@ -1,3 +1,9 @@
+type Refs @model @auth(rules: [{allow: public}]) {
+  id: ID!
+  firstname: String
+  lastname: String
+}
+
 type RegisteredPlayers @model @auth(rules: [{allow: public}]) {
   id: ID!
   firstname: String

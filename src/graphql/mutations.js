@@ -1,6 +1,51 @@
 /* eslint-disable */
 // this is an auto generated file. This will be overwritten
 
+export const createRefs = /* GraphQL */ `
+  mutation CreateRefs(
+    $input: CreateRefsInput!
+    $condition: ModelRefsConditionInput
+  ) {
+    createRefs(input: $input, condition: $condition) {
+      id
+      firstname
+      lastname
+      createdAt
+      updatedAt
+      __typename
+    }
+  }
+`;
+export const updateRefs = /* GraphQL */ `
+  mutation UpdateRefs(
+    $input: UpdateRefsInput!
+    $condition: ModelRefsConditionInput
+  ) {
+    updateRefs(input: $input, condition: $condition) {
+      id
+      firstname
+      lastname
+      createdAt
+      updatedAt
+      __typename
+    }
+  }
+`;
+export const deleteRefs = /* GraphQL */ `
+  mutation DeleteRefs(
+    $input: DeleteRefsInput!
+    $condition: ModelRefsConditionInput
+  ) {
+    deleteRefs(input: $input, condition: $condition) {
+      id
+      firstname
+      lastname
+      createdAt
+      updatedAt
+      __typename
+    }
+  }
+`;
 export const createRegisteredPlayers = /* GraphQL */ `
   mutation CreateRegisteredPlayers(
     $input: CreateRegisteredPlayersInput!

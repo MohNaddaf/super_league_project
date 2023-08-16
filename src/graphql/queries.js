@@ -1,6 +1,38 @@
 /* eslint-disable */
 // this is an auto generated file. This will be overwritten
 
+export const getRefs = /* GraphQL */ `
+  query GetRefs($id: ID!) {
+    getRefs(id: $id) {
+      id
+      firstname
+      lastname
+      createdAt
+      updatedAt
+      __typename
+    }
+  }
+`;
+export const listRefs = /* GraphQL */ `
+  query ListRefs(
+    $filter: ModelRefsFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    listRefs(filter: $filter, limit: $limit, nextToken: $nextToken) {
+      items {
+        id
+        firstname
+        lastname
+        createdAt
+        updatedAt
+        __typename
+      }
+      nextToken
+      __typename
+    }
+  }
+`;
 export const getRegisteredPlayers = /* GraphQL */ `
   query GetRegisteredPlayers($id: ID!) {
     getRegisteredPlayers(id: $id) {

@@ -1,6 +1,42 @@
 /* eslint-disable */
 // this is an auto generated file. This will be overwritten
 
+export const onCreateRefs = /* GraphQL */ `
+  subscription OnCreateRefs($filter: ModelSubscriptionRefsFilterInput) {
+    onCreateRefs(filter: $filter) {
+      id
+      firstname
+      lastname
+      createdAt
+      updatedAt
+      __typename
+    }
+  }
+`;
+export const onUpdateRefs = /* GraphQL */ `
+  subscription OnUpdateRefs($filter: ModelSubscriptionRefsFilterInput) {
+    onUpdateRefs(filter: $filter) {
+      id
+      firstname
+      lastname
+      createdAt
+      updatedAt
+      __typename
+    }
+  }
+`;
+export const onDeleteRefs = /* GraphQL */ `
+  subscription OnDeleteRefs($filter: ModelSubscriptionRefsFilterInput) {
+    onDeleteRefs(filter: $filter) {
+      id
+      firstname
+      lastname
+      createdAt
+      updatedAt
+      __typename
+    }
+  }
+`;
 export const onCreateRegisteredPlayers = /* GraphQL */ `
   subscription OnCreateRegisteredPlayers(
     $filter: ModelSubscriptionRegisteredPlayersFilterInput
