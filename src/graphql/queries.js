@@ -47,6 +47,7 @@ export const getRegisteredPlayers = /* GraphQL */ `
       email
       phonenumber
       instagramhandle
+      teamid
       createdAt
       updatedAt
       __typename
@@ -76,6 +77,7 @@ export const listRegisteredPlayers = /* GraphQL */ `
         email
         phonenumber
         instagramhandle
+        teamid
         createdAt
         updatedAt
         __typename

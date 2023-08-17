@@ -53,6 +53,7 @@ export const onCreateRegisteredPlayers = /* GraphQL */ `
       email
       phonenumber
       instagramhandle
+      teamid
       createdAt
       updatedAt
       __typename
@@ -75,6 +76,7 @@ export const onUpdateRegisteredPlayers = /* GraphQL */ `
       email
       phonenumber
       instagramhandle
+      teamid
       createdAt
       updatedAt
       __typename
@@ -97,6 +99,7 @@ export const onDeleteRegisteredPlayers = /* GraphQL */ `
       email
       phonenumber
       instagramhandle
+      teamid
       createdAt
       updatedAt
       __typename

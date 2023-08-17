@@ -22,7 +22,7 @@ function Management () {
   };
 
   return (            
-    <div>
+    <div id="management">
       {isRef && (<Referee/>)}
       {isAdmin && (<Referee/>)}      
     </div>
