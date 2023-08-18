@@ -1,3 +1,10 @@
+type Seasons @model @auth(rules: [{allow: public}]) {
+  id: ID!
+  season: String
+  year: String
+  startdate: AWSDate
+}
+
 type Refs @model @auth(rules: [{allow: public}]) {
   id: ID!
   firstname: String
@@ -17,6 +24,12 @@ type RegisteredPlayers @model @auth(rules: [{allow: public}]) {
   phonenumber: String
   instagramhandle: String
   teamid: String
+  goals: String
+  assists: String
+  contributions: String
+  totalgoals: Int
+  totalassists: Int
+  totalcontributions: Int
 }
 
 type RegisteredTeams @model @auth(rules: [{allow: public}]) {

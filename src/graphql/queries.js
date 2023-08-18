@@ -1,6 +1,40 @@
 /* eslint-disable */
 // this is an auto generated file. This will be overwritten
 
+export const getSeasons = /* GraphQL */ `
+  query GetSeasons($id: ID!) {
+    getSeasons(id: $id) {
+      id
+      season
+      year
+      startdate
+      createdAt
+      updatedAt
+      __typename
+    }
+  }
+`;
+export const listSeasons = /* GraphQL */ `
+  query ListSeasons(
+    $filter: ModelSeasonsFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    listSeasons(filter: $filter, limit: $limit, nextToken: $nextToken) {
+      items {
+        id
+        season
+        year
+        startdate
+        createdAt
+        updatedAt
+        __typename
+      }
+      nextToken
+      __typename
+    }
+  }
+`;
 export const getRefs = /* GraphQL */ `
   query GetRefs($id: ID!) {
     getRefs(id: $id) {
@@ -48,6 +82,12 @@ export const getRegisteredPlayers = /* GraphQL */ `
       phonenumber
       instagramhandle
       teamid
+      goals
+      assists
+      contributions
+      totalgoals
+      totalassists
+      totalcontributions
       createdAt
       updatedAt
       __typename
@@ -78,6 +118,12 @@ export const listRegisteredPlayers = /* GraphQL */ `
         phonenumber
         instagramhandle
         teamid
+        goals
+        assists
+        contributions
+        totalgoals
+        totalassists
+        totalcontributions
         createdAt
         updatedAt
         __typename

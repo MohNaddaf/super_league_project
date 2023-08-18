@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "./PlayerRegistration.css";
 import "@aws-amplify/ui-react/styles.css";
-import { API } from "aws-amplify";
+import { API, graphqlOperation } from "aws-amplify";
 import {
   Button,
   Flex,
@@ -14,7 +14,8 @@ import {
   withAuthenticator,
 } from "@aws-amplify/ui-react";
 
-import { listRegisteredTeams } from "./graphql/queries";
+import * as queries from "./graphql/queries";
+import { listRegisteredTeams, listSeasons } from "./graphql/queries";
 import {
   createRegisteredPlayers as createRegisteredPlayerMutation
 } from "./graphql/mutations";
@@ -30,29 +31,54 @@ const PlayerRegistration = ({ signOut }) => {
   }
 
   const [teams, setTeams] = useState([]);
+  const [seasons, setSeasons] = useState([]);
   const [checked, setChecked] = React.useState(false);
   const [hasError, setHasError] = React.useState(false);
+  
   useEffect(() => {
     fetchTeams();
+    fetchSeasons();
   }, []);
 
-  async function fetchTeams() {
-    const apiData = await API.graphql({ query: listRegisteredTeams });
+  async function fetchTeams(season) {
+
+    var apiData = {};
+    if (season==undefined) {
+        apiData = await API.graphql(graphqlOperation(queries.listRegisteredTeams, { filter: { year: { eq: new Date().getFullYear() }}}));
+    }
+    else{
+        apiData = await API.graphql(graphqlOperation(queries.listRegisteredTeams, { filter: { season: { eq: season }, year: { eq: new Date().getFullYear() }}}));
+    }
+
     const teamsFromAPI = apiData.data.listRegisteredTeams.items;
     setTeams(teamsFromAPI);
     createTeams(teamsFromAPI);
   }
 
+  async function fetchSeasons() {
+    API.graphql(graphqlOperation(listSeasons, { filter: { year: { eq: new Date().getFullYear() }}})).then((response) => {
+      const seasonsFromAPI = response.data.listSeasons.items;
+      setSeasons(seasonsFromAPI);      
+      createSeasons(seasonsFromAPI);      
+    });    
+  }
+
   function createTeams(teams){    
       var str="<option value=0>SELECT YOUR TEAM</option>";
-      var currentYear = new Date().getFullYear();
       for (var i = 0; i < teams.length; i++){
         var team = teams[i];
-        if (currentYear == team.year){
-          str+="<option value=" + team.id + ">" + team.teamname + " - " + team.divison + " - " + new Date().getFullYear() + "</option>";      
-        }
+        str+="<option value=" + team.id + ">" + team.teamname + " - " + team.divison + "</option>";      
       }
       document.getElementById("allteams").innerHTML = str;         
+  }
+
+  function createSeasons(seasons){    
+    var str="<option value=0>SELECT SEASON</option>";
+    for (var i = 0; i < seasons.length; i++){
+      var season = seasons[i];
+      str+="<option value=" + season.season + ">" + season.season + "</option>";      
+    }
+    document.getElementById("allseasons").innerHTML = str;         
   }
 
   async function createRegisteredPlayer(event) {
@@ -68,9 +94,6 @@ const PlayerRegistration = ({ signOut }) => {
 
     var teamID = document.getElementById("allteams").value;
     var position = document.getElementById("position").value;
-
-    console.log(teamID);
-    console.log(position);
 
     if (teamID == 0) {
       alert("Please select a team!");      
@@ -99,6 +122,7 @@ const PlayerRegistration = ({ signOut }) => {
           season: season,
           position: position,
           email: form.get("email"),
+          teamid: teamID,
           phonenumber: form.get("phone"),
           instagramhandle: form.get("instagram")
         };
@@ -127,6 +151,7 @@ const PlayerRegistration = ({ signOut }) => {
 
   return (
     <View className="PlayerRegistration">
+      
       <Heading level={1} style={hStyle}>Fill the form Below to be added to your teams roster </Heading>      
       
       <View as="form" margin="3rem 0" onSubmit={createRegisteredPlayer}>      
@@ -173,6 +198,22 @@ const PlayerRegistration = ({ signOut }) => {
 
           <Flex direction="row" justifyContent="center" >
             <SelectField
+              id="allseasons"
+              name="seasons"
+              placeholder="SELECT SEASON"
+              label="seasons"
+              labelHidden
+              variation="quiet"
+              required
+              inputStyles={textboxStyle}
+              onChange={(e) => fetchTeams(e.target.value)}
+              >                                   
+              <option value="placeholder">placeholder</option>
+            </SelectField>
+          </Flex>
+
+          <Flex direction="row" justifyContent="center" >
+            <SelectField
               id="allteams"
               name="teamname"
               placeholder="SELECT YOUR TEAM"
@@ -206,7 +247,7 @@ const PlayerRegistration = ({ signOut }) => {
             </SelectField>
           </Flex>
           
-          <div class="a">
+          <div className="a">
             <Text style={hStyle}>We like to highlight some of the top players on our Instagram page, if selected we can tag you!
                                                                           At the end of every week we select the top players to appear on the Team Of the Week, Player of the Week and/or The top scorer based on their performance and stats.</Text>
           </div>
@@ -221,7 +262,7 @@ const PlayerRegistration = ({ signOut }) => {
               inputStyles={textboxStyle}
             />    
           </Flex>
-          <div class="a">
+          <div className="a">
             <Text style={hStyle} fontSize="1.4rem">Super League Rules and Regulations (required)</Text>
             <h4 style={{ color: 'orange' }}>League Rules</h4>
             <ul style={hStyle}>         
@@ -291,7 +332,7 @@ const PlayerRegistration = ({ signOut }) => {
             </ul>
           </div>
           
-          <div class="a">
+          <div className="a">
             <CheckboxField
               label={<Text style={hStyle}>I agree to abide the Super league rules and regulations listed above</Text>}
               name="rar"

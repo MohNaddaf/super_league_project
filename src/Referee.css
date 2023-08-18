@@ -24,8 +24,30 @@
     justify-content: center;
     font-size: calc(10px + 2vmin);
     color: white;
+  }   
+
+  label.hometeam {
+    text-align: left;
+    width: 360px;
+    color: orange;
+    font-size: 25px;
   }
-  
+
+  label.awayteam {
+    text-align: left;
+    width: 360px;
+    color: green;
+    font-size: 25px;
+  }
+
+  div.single-goal-assists {
+    margin-top: 5rem;  
+  }
+
+  div.goal-assists {
+    margin-top: 2rem;  
+  }
+
   div.a {
     text-align: left;
     max-width: 60vh;

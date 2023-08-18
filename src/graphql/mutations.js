@@ -1,6 +1,54 @@
 /* eslint-disable */
 // this is an auto generated file. This will be overwritten
 
+export const createSeasons = /* GraphQL */ `
+  mutation CreateSeasons(
+    $input: CreateSeasonsInput!
+    $condition: ModelSeasonsConditionInput
+  ) {
+    createSeasons(input: $input, condition: $condition) {
+      id
+      season
+      year
+      startdate
+      createdAt
+      updatedAt
+      __typename
+    }
+  }
+`;
+export const updateSeasons = /* GraphQL */ `
+  mutation UpdateSeasons(
+    $input: UpdateSeasonsInput!
+    $condition: ModelSeasonsConditionInput
+  ) {
+    updateSeasons(input: $input, condition: $condition) {
+      id
+      season
+      year
+      startdate
+      createdAt
+      updatedAt
+      __typename
+    }
+  }
+`;
+export const deleteSeasons = /* GraphQL */ `
+  mutation DeleteSeasons(
+    $input: DeleteSeasonsInput!
+    $condition: ModelSeasonsConditionInput
+  ) {
+    deleteSeasons(input: $input, condition: $condition) {
+      id
+      season
+      year
+      startdate
+      createdAt
+      updatedAt
+      __typename
+    }
+  }
+`;
 export const createRefs = /* GraphQL */ `
   mutation CreateRefs(
     $input: CreateRefsInput!
@@ -64,6 +112,12 @@ export const createRegisteredPlayers = /* GraphQL */ `
       phonenumber
       instagramhandle
       teamid
+      goals
+      assists
+      contributions
+      totalgoals
+      totalassists
+      totalcontributions
       createdAt
       updatedAt
       __typename
@@ -88,6 +142,12 @@ export const updateRegisteredPlayers = /* GraphQL */ `
       phonenumber
       instagramhandle
       teamid
+      goals
+      assists
+      contributions
+      totalgoals
+      totalassists
+      totalcontributions
       createdAt
       updatedAt
       __typename
@@ -112,6 +172,12 @@ export const deleteRegisteredPlayers = /* GraphQL */ `
       phonenumber
       instagramhandle
       teamid
+      goals
+      assists
+      contributions
+      totalgoals
+      totalassists
+      totalcontributions
       createdAt
       updatedAt
       __typename

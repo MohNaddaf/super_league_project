@@ -1,6 +1,45 @@
 /* eslint-disable */
 // this is an auto generated file. This will be overwritten
 
+export const onCreateSeasons = /* GraphQL */ `
+  subscription OnCreateSeasons($filter: ModelSubscriptionSeasonsFilterInput) {
+    onCreateSeasons(filter: $filter) {
+      id
+      season
+      year
+      startdate
+      createdAt
+      updatedAt
+      __typename
+    }
+  }
+`;
+export const onUpdateSeasons = /* GraphQL */ `
+  subscription OnUpdateSeasons($filter: ModelSubscriptionSeasonsFilterInput) {
+    onUpdateSeasons(filter: $filter) {
+      id
+      season
+      year
+      startdate
+      createdAt
+      updatedAt
+      __typename
+    }
+  }
+`;
+export const onDeleteSeasons = /* GraphQL */ `
+  subscription OnDeleteSeasons($filter: ModelSubscriptionSeasonsFilterInput) {
+    onDeleteSeasons(filter: $filter) {
+      id
+      season
+      year
+      startdate
+      createdAt
+      updatedAt
+      __typename
+    }
+  }
+`;
 export const onCreateRefs = /* GraphQL */ `
   subscription OnCreateRefs($filter: ModelSubscriptionRefsFilterInput) {
     onCreateRefs(filter: $filter) {
@@ -54,6 +93,12 @@ export const onCreateRegisteredPlayers = /* GraphQL */ `
       phonenumber
       instagramhandle
       teamid
+      goals
+      assists
+      contributions
+      totalgoals
+      totalassists
+      totalcontributions
       createdAt
       updatedAt
       __typename
@@ -77,6 +122,12 @@ export const onUpdateRegisteredPlayers = /* GraphQL */ `
       phonenumber
       instagramhandle
       teamid
+      goals
+      assists
+      contributions
+      totalgoals
+      totalassists
+      totalcontributions
       createdAt
       updatedAt
       __typename
@@ -100,6 +151,12 @@ export const onDeleteRegisteredPlayers = /* GraphQL */ `
       phonenumber
       instagramhandle
       teamid
+      goals
+      assists
+      contributions
+      totalgoals
+      totalassists
+      totalcontributions
       createdAt
       updatedAt
       __typename
