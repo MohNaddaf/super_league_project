@@ -54,22 +54,22 @@ const hStyle = { color: 'orange'};
 const textboxStyle = {
     backgroundColor: 'white',
     border: `1px solid`,
-    width: Dimensions.get('window').width / 100 * 55,
+    width: Dimensions.get('window').width / 100 * 60,
     margin: '1rem 0'
 };
 
 const hometeamstyle = {
     'text-align': 'left',
-    width: Dimensions.get('window').width /2.3,
+    width: '45%',
     color: 'green',
-    'font-size': `25px`
+    'font-size': `18px`
 }
 
 const awayteamstyle = {
     'text-align': 'left',
-    width: Dimensions.get('window').width /2.3,
+    width: '45%',
     color: 'orange',
-    'font-size': `25px`
+    'font-size': `18px`
 }
 
 const handleToggle = (value, homeoraway) => () => {     
@@ -596,12 +596,12 @@ const handleToggle = (value, homeoraway) => () => {
             <View className="Referee">
               <Heading level={1} style={hStyle}>Score:</Heading>     
               
-              <Flex direction="row" justifyContent="center" style={{margin: '2rem 0'}} >          
+              <Flex direction="row" justifyContent="center"  >          
               <Heading level={2} style={hStyle}>{currentHomeTeamScore} - </Heading>
               <Heading level={2} style={{ color: 'green'}}>{currentAwayTeamScore}</Heading>
               </Flex>
 
-              <Flex direction="row" justifyContent="center" style={{margin: '1rem 0'}} >          
+              <Flex direction="row" justifyContent="center">          
                 <label className="hometeam" style={hometeamstyle}>Home Team: {selectedHomeTeam.teamname}</label>
                 <label className="awayteam" style={awayteamstyle}>Away Team: {selectedAwayTeam.teamname}</label>
               </Flex>
@@ -609,7 +609,7 @@ const handleToggle = (value, homeoraway) => () => {
 
               <Flex direction="row" justifyContent="center" >          
     
-                        <List sx={{ width: '100%', maxWidth: Dimensions.get('window').width/2.3, bgcolor: 'background.paper', overflow: 'auto', maxHeight: 400}}>
+                        <List sx={{ width: '45%', maxWidth: Dimensions.get('window').width/2.3, bgcolor: 'background.paper', overflow: 'auto', maxHeight: Dimensions.get('window').height/2.5}}>
                             {homeTeamPlayers.map((value) => {
                                 return (
                                 <ListItem
@@ -620,7 +620,6 @@ const handleToggle = (value, homeoraway) => () => {
                                     <ListItemIcon>
                                         <Checkbox
                                         edge="start"
-                                        name="swag"
                                         checked={playerID == value.id}
                                         tabIndex={-1}
                                         disableRipple
@@ -633,7 +632,7 @@ const handleToggle = (value, homeoraway) => () => {
                             })}
                         </List>
 
-                        <List sx={{ width: '100%', maxWidth: Dimensions.get('window').width/2.3, bgcolor: 'background.paper', overflow: 'auto', maxHeight: 400 }}>
+                        <List sx={{ width: '45%', maxWidth: Dimensions.get('window').width/2.3, bgcolor: 'background.paper', overflow: 'auto', maxHeight: Dimensions.get('window').height/2.5 }}>
                             {awayTeamPlayers.map((value) => {
                                 return (
                                 <ListItem
@@ -644,7 +643,6 @@ const handleToggle = (value, homeoraway) => () => {
                                     <ListItemIcon>
                                         <Checkbox
                                         edge="start"
-                                        name="teamplayer"
                                         checked={playerID == value.id}
                                         tabIndex={-1}
                                         disableRipple
@@ -660,17 +658,17 @@ const handleToggle = (value, homeoraway) => () => {
                     
                     <div className="single-goal-assists"> 
                         <Flex direction="row" justifyContent="center">
-                            <Button onClick={addGoal} style={{width: '23rem', backgroundColor: 'green'}} type="submit" variation="primary" >
+                            <Button onClick={addGoal} style={{width: '45%', maxWidth: Dimensions.get('window').width/2.3, backgroundColor: 'green'}} type="submit" variation="primary" >
                             GOAL
                             </Button>
-                            <Button onClick={addAssist} style={{width: '23rem'}} type="submit" variation="primary" >
+                            <Button onClick={addAssist} style={{width: '45%', maxWidth: Dimensions.get('window').width/2.3}} type="submit" variation="primary" >
                             ASSIST
                             </Button>
                         </Flex>                         
                     </div>   
                     <div className="goal-assists"> 
                         <Flex direction="row" justifyContent="center">
-                            <Button onClick={removeGoal} style={{width: '7rem', backgroundColor: 'green'}} type="submit" variation="primary" >
+                            <Button onClick={removeGoal} style={{width: '3rem', backgroundColor: 'green'}} type="submit" variation="primary" >
                             -
                             </Button>
                             <TextField
@@ -678,15 +676,15 @@ const handleToggle = (value, homeoraway) => () => {
                                 placeholder={currentGoals}
                                 value={currentGoals}
                                 labelHidden                                
-                                inputStyles={{backgroundColor: 'white', width: '7rem'}}
+                                inputStyles={{backgroundColor: 'white', width: '3rem'}}
                                 isReadOnly={true}
                             />                            
-                            <Button onClick={addGoal} style={{width: '7rem', backgroundColor: 'green'}} type="submit" variation="primary" >
+                            <Button onClick={addGoal} style={{width: '3rem', backgroundColor: 'green'}} type="submit" variation="primary" >
                             +
                             </Button>
 
 
-                            <Button onClick={removeAssist} style={{width: '7rem'}} type="submit" variation="primary" >
+                            <Button onClick={removeAssist} style={{width: '3rem'}} type="submit" variation="primary" >
                             -
                             </Button>
                             <TextField
@@ -694,16 +692,16 @@ const handleToggle = (value, homeoraway) => () => {
                                 placeholder={currentAssists}
                                 value={currentAssists}
                                 labelHidden                                
-                                inputStyles={{backgroundColor: 'white', width: '7rem'}}
+                                inputStyles={{backgroundColor: 'white', width: '3rem'}}
                                 isReadOnly={true}
                             />
-                            <Button onClick={addAssist} style={{width: '7rem'}} type="submit" variation="primary" >
+                            <Button onClick={addAssist} style={{width: '3rem'}} type="submit" variation="primary" >
                             +
                             </Button>
                         </Flex>
                         <div className="end-match"> 
                             <Flex direction="row" justifyContent="center">
-                                <Button onClick={EndMatch} style={{width: '47rem', backgroundColor: 'purple'}} type="submit" variation="primary" >
+                                <Button onClick={EndMatch} style={{width: '90%', maxWidth: Dimensions.get('window').width/1.1, backgroundColor: 'purple'}} type="submit" variation="primary" >
                                 END MATCH
                                 </Button>
                             </Flex>                         
