@@ -591,7 +591,7 @@ const handleToggle = (value, homeoraway) => () => {
         window.location.reload();
     }
 
-    function beginReffingMatch() {        
+    function beginReffingMatch() {  
         return (
             <View className="Referee">
               <Heading level={1} style={hStyle}>Score:</Heading>     
@@ -608,50 +608,52 @@ const handleToggle = (value, homeoraway) => () => {
               
 
               <Flex direction="row" justifyContent="center" >          
-    
-                        <List sx={{ width: '45%', maxWidth: Dimensions.get('window').width/2.3, bgcolor: 'background.paper', overflow: 'auto', maxHeight: Dimensions.get('window').height/2.5}}>
-                            {homeTeamPlayers.map((value) => {
-                                return (
+                    <List spacing={0} sx={{ item: {padding: 0}, margin: 0, width: '50%', maxWidth: Dimensions.get('window').width/2, bgcolor: 'background.paper', overflow: 'auto', maxHeight: Dimensions.get('window').height/2}}>
+                        {homeTeamPlayers.map((value) => {
+                            return (
+                            <ListItem
+                                key={value.id}                                
+                                disablePadding
+                                sx={{padding: 0.1, margin: 0}}
+                            >
+                                <ListItemButton sx={{padding: 0, margin: 0}} role={undefined} onClick={handleToggle(value, "Home")} dense>
+                                <ListItemIcon sx={{padding: 0.1, margin: 0}}>
+                                    <Checkbox
+                                    edge="start"
+                                    checked={playerID == value.id}
+                                    tabIndex={-1}
+                                    disableRipple
+                                    sx={{padding: 0.5, margin: 0}}
+                                    />
+                                </ListItemIcon>
+                                <ListItemText sx={{padding: 0, margin: 0}} primary={`${value.firstname} ${value.lastname}`} />
+                                </ListItemButton>
+                            </ListItem>
+                            );
+                        })}
+                    </List>
+                    <List sx={{item: {padding: 0}, margin: 0, width: '50%', maxWidth: Dimensions.get('window').width/2, bgcolor: 'background.paper', overflow: 'auto', maxHeight: Dimensions.get('window').height/2 }}>
+                        {awayTeamPlayers.map((value) => {
+                            return (
                                 <ListItem
                                     key={value.id}                                
                                     disablePadding
+                                    sx={{padding: 0.1, margin: 0}}
                                 >
-                                    <ListItemButton role={undefined} onClick={handleToggle(value, "Home")} dense>
-                                    <ListItemIcon>
+                                    <ListItemButton sx={{padding: 0, margin: 0}} role={undefined} onClick={handleToggle(value, "Away")} dense>
+                                    <ListItemIcon sx={{padding: 0.1, margin: 0}}>
                                         <Checkbox
                                         edge="start"
                                         checked={playerID == value.id}
                                         tabIndex={-1}
                                         disableRipple
+                                        sx={{padding: 0.5, margin: 0}}
                                         />
                                     </ListItemIcon>
-                                    <ListItemText  primary={`${value.firstname} ${value.lastname}`} />
+                                    <ListItemText sx={{padding: 0, margin: 0}} primary={`${value.firstname} ${value.lastname}`} />
                                     </ListItemButton>
                                 </ListItem>
-                                );
-                            })}
-                        </List>
-
-                        <List sx={{ width: '45%', maxWidth: Dimensions.get('window').width/2.3, bgcolor: 'background.paper', overflow: 'auto', maxHeight: Dimensions.get('window').height/2.5 }}>
-                            {awayTeamPlayers.map((value) => {
-                                return (
-                                <ListItem
-                                    key={value.id}                                
-                                    disablePadding
-                                >
-                                    <ListItemButton role={undefined} onClick={handleToggle(value, "Away")} dense>
-                                    <ListItemIcon>
-                                        <Checkbox
-                                        edge="start"
-                                        checked={playerID == value.id}
-                                        tabIndex={-1}
-                                        disableRipple
-                                        />
-                                    </ListItemIcon>
-                                    <ListItemText  primary={`${value.firstname} ${value.lastname}`} />
-                                    </ListItemButton>
-                                </ListItem>
-                                );
+                            );
                             })}
                         </List>
                     </Flex>
