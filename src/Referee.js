@@ -54,10 +54,23 @@ const hStyle = { color: 'orange'};
 const textboxStyle = {
     backgroundColor: 'white',
     border: `1px solid`,
-    width: Dimensions.get('window').width / 100 * 40,
+    width: Dimensions.get('window').width / 100 * 55,
     margin: '1rem 0'
 };
 
+const hometeamstyle = {
+    'text-align': 'left',
+    width: Dimensions.get('window').width /2.3,
+    color: 'green',
+    'font-size': `25px`
+}
+
+const awayteamstyle = {
+    'text-align': 'left',
+    width: Dimensions.get('window').width /2.3,
+    color: 'orange',
+    'font-size': `25px`
+}
 
 const handleToggle = (value, homeoraway) => () => {     
     setPlayerID(value.id);
@@ -589,14 +602,14 @@ const handleToggle = (value, homeoraway) => () => {
               </Flex>
 
               <Flex direction="row" justifyContent="center" style={{margin: '1rem 0'}} >          
-                <label className="hometeam">Home Team: {selectedHomeTeam.teamname}</label>
-                <label className="awayteam">Away Team: {selectedAwayTeam.teamname}</label>
+                <label className="hometeam" style={hometeamstyle}>Home Team: {selectedHomeTeam.teamname}</label>
+                <label className="awayteam" style={awayteamstyle}>Away Team: {selectedAwayTeam.teamname}</label>
               </Flex>
               
 
               <Flex direction="row" justifyContent="center" >          
     
-                        <List sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper', overflow: 'auto', maxHeight: 400}}>
+                        <List sx={{ width: '100%', maxWidth: Dimensions.get('window').width/2.3, bgcolor: 'background.paper', overflow: 'auto', maxHeight: 400}}>
                             {homeTeamPlayers.map((value) => {
                                 return (
                                 <ListItem
@@ -620,7 +633,7 @@ const handleToggle = (value, homeoraway) => () => {
                             })}
                         </List>
 
-                        <List sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper', overflow: 'auto', maxHeight: 400 }}>
+                        <List sx={{ width: '100%', maxWidth: Dimensions.get('window').width/2.3, bgcolor: 'background.paper', overflow: 'auto', maxHeight: 400 }}>
                             {awayTeamPlayers.map((value) => {
                                 return (
                                 <ListItem
