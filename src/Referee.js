@@ -21,6 +21,7 @@ import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Checkbox from '@mui/material/Checkbox';
+import { Dimensions } from "react-native"
 
 const Referee = ({ signOut }) => {
 const [teams, setTeams] = useState([]);
@@ -53,9 +54,10 @@ const hStyle = { color: 'orange'};
 const textboxStyle = {
     backgroundColor: 'white',
     border: `1px solid`,
-    width: '50rem',
+    width: Dimensions.get('window').width / 100 * 40,
     margin: '1rem 0'
 };
+
 
 const handleToggle = (value, homeoraway) => () => {     
     setPlayerID(value.id);
@@ -259,7 +261,7 @@ const handleToggle = (value, homeoraway) => () => {
     function refereeSelection() {        
         return (
             <View className="Referee">
-              <Heading level={1} style={hStyle}>Please select the two teams playing:</Heading>                   
+                <Heading level={1} style={hStyle}>Please select the two teams playing:</Heading>                   
                 <View as="form" margin="3rem 0" onSubmit={beginReffing}>                    
                     <Flex direction="row" justifyContent="center" >
                         <SelectField
@@ -571,7 +573,7 @@ const handleToggle = (value, homeoraway) => () => {
             query: mutations.updateRegisteredTeams, 
             variables: { input: updateAwayTeam }
         });
-
+        
         alert("Match Ended");
         window.location.reload();
     }
