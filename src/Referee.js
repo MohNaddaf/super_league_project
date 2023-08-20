@@ -594,11 +594,11 @@ const handleToggle = (value, homeoraway) => () => {
     function beginReffingMatch() {  
         return (
             <View className="Referee">
-              <Heading level={1} style={hStyle}>Score:</Heading>     
+              <Heading level={3} style={hStyle}>Score:</Heading>     
               
               <Flex direction="row" justifyContent="center"  >          
-              <Heading level={2} style={hStyle}>{currentHomeTeamScore} - </Heading>
-              <Heading level={2} style={{ color: 'green'}}>{currentAwayTeamScore}</Heading>
+              <Heading level={4} style={hStyle}>{currentHomeTeamScore} - </Heading>
+              <Heading level={4} style={{ color: 'green'}}>{currentAwayTeamScore}</Heading>
               </Flex>
 
               <Flex direction="row" justifyContent="center">          
