@@ -1,6 +1,48 @@
 /* eslint-disable */
 // this is an auto generated file. This will be overwritten
 
+export const getMatches = /* GraphQL */ `
+  query GetMatches($id: ID!) {
+    getMatches(id: $id) {
+      id
+      hometeam
+      awayteam
+      hometeamscore
+      awayteamscore
+      season
+      division
+      year
+      createdAt
+      updatedAt
+      __typename
+    }
+  }
+`;
+export const listMatches = /* GraphQL */ `
+  query ListMatches(
+    $filter: ModelMatchesFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    listMatches(filter: $filter, limit: $limit, nextToken: $nextToken) {
+      items {
+        id
+        hometeam
+        awayteam
+        hometeamscore
+        awayteamscore
+        season
+        division
+        year
+        createdAt
+        updatedAt
+        __typename
+      }
+      nextToken
+      __typename
+    }
+  }
+`;
 export const getSeasons = /* GraphQL */ `
   query GetSeasons($id: ID!) {
     getSeasons(id: $id) {
@@ -141,6 +183,7 @@ export const getRegisteredTeams = /* GraphQL */ `
       season
       divison
       year
+      gamesplayed
       createdAt
       updatedAt
       __typename
@@ -160,6 +203,7 @@ export const listRegisteredTeams = /* GraphQL */ `
         season
         divison
         year
+        gamesplayed
         createdAt
         updatedAt
         __typename

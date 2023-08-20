@@ -11,9 +11,10 @@ import {
   TextField
 } from "@aws-amplify/ui-react";
 
-import moment from 'moment';
 import * as queries from "./graphql/queries";
+import * as mutations from "./graphql/mutations";
 import { listRegisteredTeams, listRefs, listSeasons} from "./graphql/queries";
+import { createMatches as createMatch} from "./graphql/mutations";
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
@@ -28,8 +29,11 @@ const [divisions, setDivisions] = useState([]);
 const [selectedSeason, setSelectedSeason] = useState("");
 const [selectedSeasonStartDate, setSelectedSeasonStartDate] = useState("");
 const [selectedDivision, setSelectedDivision] = useState("");
+const [selectedTeam, setSelectedTeam] = useState("");
 const [homeTeamPlayers, setHomeTeamPlayers] = useState([]);
 const [awayTeamPlayers, setAwayTeamPlayers] = useState([]);
+const [homeTeamGamesPlayed, setHomeTeamGamesPlayed] = useState(0);
+const [awayTeamGamesPlayed, setAwayTeamGamesPlayed] = useState(0);
 const [isReffing, setIsReffing] = useState(false);
 const [homeTeamID, setHomeTeamID] = useState("");
 const [awayTeamID, setAwayTeamID] = useState("");
@@ -39,6 +43,11 @@ const [selectedHomeTeam, setSelectedHomeTeam] = useState({});
 const [selectedAwayTeam, setSelectedAwayTeam] = useState({});
 const [currentGoals, setCurrentGoals] = useState(0);
 const [currentAssists, setCurrentAssists] = useState(0);
+const [currentHomeTeamScore, setCurrentHomeTeamScore] = useState(0);
+const [currentAwayTeamScore, setCurrentAwayTeamScore] = useState(0);
+
+var currentScoreHome = 0;
+var currentScoreAway = 0;
 
 const hStyle = { color: 'orange'};
 const textboxStyle = {
@@ -48,9 +57,10 @@ const textboxStyle = {
     margin: '1rem 0'
 };
 
-const handleToggle = (value) => () => {     
+const handleToggle = (value, homeoraway) => () => {     
     setPlayerID(value.id);
     fetchCurrentPlayer(value.id);
+    setSelectedTeam(homeoraway);
 };
 
     useEffect(() => {
@@ -154,20 +164,23 @@ const handleToggle = (value) => () => {
     async function fetchCurrentPlayer(playerid) { 
         API.graphql(graphqlOperation(queries.getRegisteredPlayers, { id: playerid})).then((response) => {
             const playerFromAPI = response.data.getRegisteredPlayers;
-            setCurrentPlayer(playerFromAPI);          
+            setCurrentPlayer(playerFromAPI);
+            setPlayerStats(playerFromAPI);
         });
     }
 
     async function fetchPlayers() {            
         API.graphql(graphqlOperation(queries.listRegisteredPlayers, { filter: { teamid: { eq: homeTeamID }}})).then((response) => {
             const homeTeamPlayersFromAPI = response.data.listRegisteredPlayers.items;
-            setHomeTeamPlayers(homeTeamPlayersFromAPI);            
+            setHomeTeamPlayers(homeTeamPlayersFromAPI);           
+            setPlayerStatsGameStart(homeTeamPlayersFromAPI, homeTeamGamesPlayed, true); 
         });  
 
         API.graphql(graphqlOperation(queries.listRegisteredPlayers, { filter: { teamid: { eq: awayTeamID }}})).then((response) => {
             const awayTeamPlayersFromAPI = response.data.listRegisteredPlayers.items;
-            setAwayTeamPlayers(awayTeamPlayersFromAPI);            
-        });
+            setAwayTeamPlayers(awayTeamPlayersFromAPI);   
+            setPlayerStatsGameStart(awayTeamPlayersFromAPI, awayTeamGamesPlayed, false);         
+        });        
     }
     function createSeasons(seasons){    
         var str="<option value=0>SELECT SEASON</option>";
@@ -226,6 +239,8 @@ const handleToggle = (value) => () => {
         for (var i=0; i<teams.length;i++) {
             if (teams[i].id == homeID){
                 setSelectedHomeTeam(teams[i]);
+                setHomeTeamGamesPlayed(teams[i].gamesplayed);
+                setSelectedTeam("Home");
             }
         }
     }
@@ -235,6 +250,8 @@ const handleToggle = (value) => () => {
         for (var i=0; i<teams.length;i++) {
             if (teams[i].id == awayID){
                 setSelectedAwayTeam(teams[i]);
+                setAwayTeamGamesPlayed(teams[i].gamesplayed);
+                setSelectedTeam("Away");
             }
         }
     }
@@ -335,57 +352,245 @@ const handleToggle = (value) => () => {
           );
     }
 
+    function setPlayerStatsGameStart(players, gamesplayed, isHomeTeam) {
+        var newGoals="";
+        var newAssists="";
+        var newContributions="";       
+        for (var i=0; i<players.length;i++){                                
+            var player=players[i];
+
+            if (player.goals=="" || player.goals==undefined) {
+                newGoals="0";
+                updatePlayerGoals(player.id, newGoals);
+            }
+            else {
+                var goalsToList = player.goals.split(",");
+                if (goalsToList.length == gamesplayed) {
+                    newGoals = player.goals + ",0";
+                    updatePlayerGoals(player.id, newGoals);
+                }
+                else{
+                    if(isHomeTeam){
+                        currentScoreHome += parseInt(goalsToList[gamesplayed]);
+                        setCurrentHomeTeamScore(currentScoreHome);
+                    }
+                    else{
+                        currentScoreAway += parseInt(goalsToList[gamesplayed]);
+                        setCurrentAwayTeamScore(currentScoreAway);
+                    }
+                }
+            }
+
+            if (player.assists=="" || player.assists==undefined) {
+                newAssists="0";
+                updatePlayerAssists(player.id, newAssists);
+            }
+            else {
+                var assistsToList = player.assists.split(",");
+                if (assistsToList.length == gamesplayed) {
+                    newAssists = player.assists + ",0";
+                    updatePlayerAssists(player.id, newAssists);
+                }
+            }
+
+
+            if (player.contributions=="" || player.contributions==undefined) {
+                newContributions="0";
+                updatePlayerContributions(player.id, newContributions);
+            }
+            else {
+                var contributionsToList = player.contributions.split(",");
+                if (contributionsToList.length == gamesplayed) {
+                    newContributions = player.contributions + ",0";
+                    updatePlayerContributions(player.id, newContributions);
+                }
+            }
+        }
+    }
+
+    async function updatePlayerGoals(playerid, newgoals) {
+        const informationToUpdate = {
+            id: playerid,
+            goals: newgoals
+        };
+
+        const playerReturned = await API.graphql({ 
+            query: mutations.updateRegisteredPlayers, 
+            variables: { input: informationToUpdate }
+        });
+
+        fetchCurrentPlayer(playerid);
+    }
+
+    async function updatePlayerAssists(playerid, newassists) {
+        const informationToUpdate = {
+            id: playerid,
+            assists: newassists
+        };
+
+        await API.graphql({ 
+            query: mutations.updateRegisteredPlayers, 
+            variables: { input: informationToUpdate }
+        });
+
+        fetchCurrentPlayer(playerid);
+    }
+
+    async function updatePlayerContributions(playerid, newcontributions) {
+        const informationToUpdate = {
+            id: playerid,
+            contributions: newcontributions
+        };
+
+        await API.graphql({ 
+            query: mutations.updateRegisteredPlayers, 
+            variables: { input: informationToUpdate }
+        });
+
+        fetchCurrentPlayer(playerid);
+    }    
+
+    function setPlayerStats(player) {                
+        var gameNumber = selectedTeam == "Home" ? homeTeamGamesPlayed : awayTeamGamesPlayed;
+
+        var goalsToList = player.goals.split(",");
+        var assistsToList = player.assists.split(",");
+
+        setCurrentGoals(parseInt(goalsToList[gameNumber]));
+        setCurrentAssists(parseInt(assistsToList[gameNumber]));     
+    }
+
     function addGoal(event) {
-        //Fetch current player
-        fetchCurrentPlayer(playerID);
-        
-        
-        //selectedSeasonStartDate
+        var gameNumber = selectedTeam == "Home" ? homeTeamGamesPlayed : awayTeamGamesPlayed;
+        var goalsToList = currentPlayer.goals.split(",");
+        var assistsToList = currentPlayer.assists.split(",");
+        var contributions = currentPlayer.contributions.split(",");
+        var id = currentPlayer.id;
+    
+        goalsToList[gameNumber] = parseInt(goalsToList[gameNumber]) + 1;
+        updatePlayerGoals(id, goalsToList.toString());
 
-
-        //Update The Goal for current Player ID.
-
-        //Fetch current player again
-        //update score state for current player
-
-        //Need to somehow figure the week we are in :/
-        //
-        //
-        //
-        //
-        //
+        contributions[gameNumber] = parseInt(goalsToList[gameNumber]) + parseInt(assistsToList[gameNumber]);
+        updatePlayerContributions(id, contributions.toString());
+        if (selectedTeam == "Home") {
+            var newScore = currentHomeTeamScore+1;
+            setCurrentHomeTeamScore(newScore);
+        }
+        else{
+            var newScore = currentAwayTeamScore+1;
+            setCurrentAwayTeamScore(newScore);
+        }
     }
 
     function addAssist(event) {
-        alert("Adding Assist");
+        var gameNumber = selectedTeam == "Home" ? homeTeamGamesPlayed : awayTeamGamesPlayed;
+        var assistsToList = currentPlayer.assists.split(",");
+        var goalsToList = currentPlayer.goals.split(",");
+        var contributions = currentPlayer.contributions.split(",");
+        var id = currentPlayer.id;
+
+        assistsToList[gameNumber] = parseInt(assistsToList[gameNumber]) + 1;
+        updatePlayerAssists(id, assistsToList.toString());
+
+        contributions[gameNumber] = parseInt(goalsToList[gameNumber]) + parseInt(assistsToList[gameNumber]);
+        updatePlayerContributions(id, contributions.toString());
     }
 
-    function removeGoal(event) {
-        alert("Removing Goal");
+    function removeGoal(event) {        
+        var gameNumber = selectedTeam == "Home" ? homeTeamGamesPlayed : awayTeamGamesPlayed;
+        var goalsToList = currentPlayer.goals.split(",");
+        var assistsToList = currentPlayer.assists.split(",");
+        var contributions = currentPlayer.contributions.split(",");
+        var id = currentPlayer.id;
+
+        if (goalsToList[gameNumber]!=0) {
+            goalsToList[gameNumber] = parseInt(goalsToList[gameNumber]) - 1;
+            updatePlayerGoals(id, goalsToList.toString());
+
+            contributions[gameNumber] = parseInt(goalsToList[gameNumber]) + parseInt(assistsToList[gameNumber]);
+            updatePlayerContributions(id, contributions.toString());
+
+            if (selectedTeam == "Home") {
+                var newScore = currentHomeTeamScore-1;
+                setCurrentHomeTeamScore(newScore);
+            }
+            else{
+                var newScore = currentAwayTeamScore-1;
+                setCurrentAwayTeamScore(newScore);
+            }
+        }
     }
 
     function removeAssist(event) {
-        alert("Removing Assist");
+        var gameNumber = selectedTeam == "Home" ? homeTeamGamesPlayed : awayTeamGamesPlayed;
+        var assistsToList = currentPlayer.assists.split(",");
+        var goalsToList = currentPlayer.goals.split(",");
+        var contributions = currentPlayer.contributions.split(",");
+        var id = currentPlayer.id;
+
+        if (assistsToList[gameNumber]!=0) {
+            assistsToList[gameNumber] = parseInt(assistsToList[gameNumber]) - 1;
+            updatePlayerAssists(id, assistsToList.toString());
+
+            contributions[gameNumber] = parseInt(goalsToList[gameNumber]) + parseInt(assistsToList[gameNumber]);
+            updatePlayerContributions(id, contributions.toString());
+        }
     }
 
-    function beginReffingMatch() {
-        //moment().format(); 
-        //var today = moment().add(6,'days');
-        //var birthday = moment(selectedSeasonStartDate, 'YYYY-MM-DD');
-        //var birthday = moment(selectedSeasonStartDate, 'YYYY-MM-DD').add(6, 'days');
-        //selectedSeasonStartDate
-        //selectedSeasonStartDate
-        //console.log(today.diff(birthday, 'week'));    
+    async function EndMatch(event) {
+        const data = {
+            hometeam: selectedHomeTeam.teamname,
+            awayteam: selectedAwayTeam.teamname,
+            hometeamscore: currentHomeTeamScore,
+            awayteamscore: currentAwayTeamScore,
+            season: selectedSeason,
+            division: selectedDivision,
+            year: new Date().getFullYear()
+        };
+            
+        await API.graphql({
+            query: createMatch,
+            variables: { input: data },
+        });        
+          
+        const updateHomeTeam = {
+            id: selectedHomeTeam.id,
+            gamesplayed: (selectedHomeTeam.gamesplayed + 1)
+        };
 
-        //console.log(selectedSeasonStartDate);
+        const updateAwayTeam = {
+            id: selectedAwayTeam.id,
+            gamesplayed: (selectedAwayTeam.gamesplayed + 1)
+        };
+        
+        await API.graphql({ 
+            query: mutations.updateRegisteredTeams, 
+            variables: { input: updateHomeTeam }
+        });
+        await API.graphql({ 
+            query: mutations.updateRegisteredTeams, 
+            variables: { input: updateAwayTeam }
+        });
+
+        alert("Match Ended");
+        window.location.reload();
+    }
+
+    function beginReffingMatch() {        
         return (
             <View className="Referee">
-              <Heading level={1} style={hStyle}>Select players to update scores</Heading>     
-
+              <Heading level={1} style={hStyle}>Score:</Heading>     
+              
               <Flex direction="row" justifyContent="center" style={{margin: '2rem 0'}} >          
+              <Heading level={2} style={hStyle}>{currentHomeTeamScore} - </Heading>
+              <Heading level={2} style={{ color: 'green'}}>{currentAwayTeamScore}</Heading>
+              </Flex>
+
+              <Flex direction="row" justifyContent="center" style={{margin: '1rem 0'}} >          
                 <label className="hometeam">Home Team: {selectedHomeTeam.teamname}</label>
                 <label className="awayteam">Away Team: {selectedAwayTeam.teamname}</label>
               </Flex>
+              
 
               <Flex direction="row" justifyContent="center" >          
     
@@ -396,7 +601,7 @@ const handleToggle = (value) => () => {
                                     key={value.id}                                
                                     disablePadding
                                 >
-                                    <ListItemButton role={undefined} onClick={handleToggle(value)} dense>
+                                    <ListItemButton role={undefined} onClick={handleToggle(value, "Home")} dense>
                                     <ListItemIcon>
                                         <Checkbox
                                         edge="start"
@@ -420,11 +625,11 @@ const handleToggle = (value) => () => {
                                     key={value.id}                                
                                     disablePadding
                                 >
-                                    <ListItemButton role={undefined} onClick={handleToggle(value)} dense>
+                                    <ListItemButton role={undefined} onClick={handleToggle(value, "Away")} dense>
                                     <ListItemIcon>
                                         <Checkbox
                                         edge="start"
-                                        name="swag"
+                                        name="teamplayer"
                                         checked={playerID == value.id}
                                         tabIndex={-1}
                                         disableRipple
@@ -480,7 +685,14 @@ const handleToggle = (value) => () => {
                             <Button onClick={addAssist} style={{width: '7rem'}} type="submit" variation="primary" >
                             +
                             </Button>
-                        </Flex>                         
+                        </Flex>
+                        <div className="end-match"> 
+                            <Flex direction="row" justifyContent="center">
+                                <Button onClick={EndMatch} style={{width: '47rem', backgroundColor: 'purple'}} type="submit" variation="primary" >
+                                END MATCH
+                                </Button>
+                            </Flex>                         
+                        </div>                      
                     </div>           
             </View>
           );

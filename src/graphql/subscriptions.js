@@ -1,6 +1,57 @@
 /* eslint-disable */
 // this is an auto generated file. This will be overwritten
 
+export const onCreateMatches = /* GraphQL */ `
+  subscription OnCreateMatches($filter: ModelSubscriptionMatchesFilterInput) {
+    onCreateMatches(filter: $filter) {
+      id
+      hometeam
+      awayteam
+      hometeamscore
+      awayteamscore
+      season
+      division
+      year
+      createdAt
+      updatedAt
+      __typename
+    }
+  }
+`;
+export const onUpdateMatches = /* GraphQL */ `
+  subscription OnUpdateMatches($filter: ModelSubscriptionMatchesFilterInput) {
+    onUpdateMatches(filter: $filter) {
+      id
+      hometeam
+      awayteam
+      hometeamscore
+      awayteamscore
+      season
+      division
+      year
+      createdAt
+      updatedAt
+      __typename
+    }
+  }
+`;
+export const onDeleteMatches = /* GraphQL */ `
+  subscription OnDeleteMatches($filter: ModelSubscriptionMatchesFilterInput) {
+    onDeleteMatches(filter: $filter) {
+      id
+      hometeam
+      awayteam
+      hometeamscore
+      awayteamscore
+      season
+      division
+      year
+      createdAt
+      updatedAt
+      __typename
+    }
+  }
+`;
 export const onCreateSeasons = /* GraphQL */ `
   subscription OnCreateSeasons($filter: ModelSubscriptionSeasonsFilterInput) {
     onCreateSeasons(filter: $filter) {
@@ -173,6 +224,7 @@ export const onCreateRegisteredTeams = /* GraphQL */ `
       season
       divison
       year
+      gamesplayed
       createdAt
       updatedAt
       __typename
@@ -189,6 +241,7 @@ export const onUpdateRegisteredTeams = /* GraphQL */ `
       season
       divison
       year
+      gamesplayed
       createdAt
       updatedAt
       __typename
@@ -205,6 +258,7 @@ export const onDeleteRegisteredTeams = /* GraphQL */ `
       season
       divison
       year
+      gamesplayed
       createdAt
       updatedAt
       __typename

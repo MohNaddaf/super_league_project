@@ -48,6 +48,10 @@
     margin-top: 2rem;  
   }
 
+  div.end-match {
+    margin-top: 2rem;  
+  }
+
   div.a {
     text-align: left;
     max-width: 60vh;

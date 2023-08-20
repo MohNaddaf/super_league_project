@@ -1,3 +1,14 @@
+type Matches @model @auth(rules: [{allow: public}]) {
+  id: ID!
+  hometeam: String
+  awayteam: String
+  hometeamscore: String
+  awayteamscore: String
+  season: String
+  division: String
+  year: String
+}
+
 type Seasons @model @auth(rules: [{allow: public}]) {
   id: ID!
   season: String
@@ -38,5 +49,6 @@ type RegisteredTeams @model @auth(rules: [{allow: public}]) {
   season: String
   divison: String
   year: String
+  gamesplayed: Int
 }
  
