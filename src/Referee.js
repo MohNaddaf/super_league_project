@@ -476,6 +476,9 @@ const handleToggle = (value, homeoraway) => () => {
     }
 
     function addGoal(event) {
+        if(Object.keys(currentPlayer).length==0){
+            return;
+        }
         var gameNumber = selectedTeam == "Home" ? homeTeamGamesPlayed : awayTeamGamesPlayed;
         var goalsToList = currentPlayer.goals.split(",");
         var assistsToList = currentPlayer.assists.split(",");
@@ -498,6 +501,9 @@ const handleToggle = (value, homeoraway) => () => {
     }
 
     function addAssist(event) {
+        if(Object.keys(currentPlayer).length==0){
+            return;
+        }
         var gameNumber = selectedTeam == "Home" ? homeTeamGamesPlayed : awayTeamGamesPlayed;
         var assistsToList = currentPlayer.assists.split(",");
         var goalsToList = currentPlayer.goals.split(",");
@@ -511,7 +517,10 @@ const handleToggle = (value, homeoraway) => () => {
         updatePlayerContributions(id, contributions.toString());
     }
 
-    function removeGoal(event) {        
+    function removeGoal(event) {
+        if(Object.keys(currentPlayer).length==0){
+            return;
+        }    
         var gameNumber = selectedTeam == "Home" ? homeTeamGamesPlayed : awayTeamGamesPlayed;
         var goalsToList = currentPlayer.goals.split(",");
         var assistsToList = currentPlayer.assists.split(",");
@@ -537,6 +546,9 @@ const handleToggle = (value, homeoraway) => () => {
     }
 
     function removeAssist(event) {
+        if(Object.keys(currentPlayer).length==0){
+            return;
+        }
         var gameNumber = selectedTeam == "Home" ? homeTeamGamesPlayed : awayTeamGamesPlayed;
         var assistsToList = currentPlayer.assists.split(",");
         var goalsToList = currentPlayer.goals.split(",");

@@ -238,12 +238,12 @@ const PlayerRegistration = ({ signOut }) => {
               required              
               inputStyles={textboxStyle}             
               >
-              <option value="keeper">Keeper</option>
-              <option value="cb">Center back / Defense</option>
-              <option value="cm">Center Midfield</option>
-              <option value="rm">Right Midfield</option>
-              <option value="lm">Left Midfield</option>
-              <option value="s">Striker</option>
+              <option value="Keeper">Keeper</option>
+              <option value="Center back / Defense">Center back / Defense</option>
+              <option value="Center Midfield">Center Midfield</option>
+              <option value="Right Midfield">Right Midfield</option>
+              <option value="Left Midfield">Left Midfield</option>
+              <option value="Striker">Striker</option>
             </SelectField>
           </Flex>
           

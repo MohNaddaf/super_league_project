@@ -2,6 +2,7 @@ import { withAuthenticator} from '@aws-amplify/ui-react'
 import {React, useState, useEffect} from 'react'
 import { Auth } from 'aws-amplify'
 import Referee from './Referee';
+import Admin from './Admin';
 
 
 function Management () { 
@@ -24,7 +25,7 @@ function Management () {
   return (            
     <div id="management">
       {isRef && (<Referee/>)}
-      {isAdmin && (<Referee/>)}      
+      {isAdmin && (<Admin/>)}      
     </div>
   )  
 }

@@ -8,6 +8,7 @@
     "@emotion/styled": "^11.11.0",
     "@mantine/core": "^6.0.19",
     "@mantine/hooks": "^6.0.19",
+    "@mui/icons-material": "^5.14.3",
     "@mui/material": "^5.14.5",
     "@mui/styled-engine-sc": "^5.12.0",
     "@testing-library/jest-dom": "^5.17.0",
