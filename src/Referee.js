@@ -82,7 +82,7 @@ const handleToggle = (value, homeoraway) => () => {
         fetchRefs();
         fetchSeasons();
         fetchDivisions();
-        fetchTeams();    
+        fetchTeams();            
     }, []);
 
     async function beginReffing(event) {
@@ -370,7 +370,7 @@ const handleToggle = (value, homeoraway) => () => {
     function setPlayerStatsGameStart(players, gamesplayed, isHomeTeam) {
         var newGoals="";
         var newAssists="";
-        var newContributions="";       
+        var newContributions="";
         for (var i=0; i<players.length;i++){                                
             var player=players[i];
 
@@ -384,9 +384,17 @@ const handleToggle = (value, homeoraway) => () => {
                     newGoals = player.goals + ",0";
                     updatePlayerGoals(player.id, newGoals);
                 }
+                else if (goalsToList.length < gamesplayed){                    
+                    newGoals=player.goals;
+                    while(goalsToList.length<=gamesplayed){
+                        newGoals = newGoals + ",0";
+                        goalsToList.push("0");
+                    }
+                    updatePlayerGoals(player.id, newGoals);
+                }
                 else{
                     if(isHomeTeam){
-                        currentScoreHome += parseInt(goalsToList[gamesplayed]);
+                        currentScoreHome += parseInt(goalsToList[gamesplayed]);                        
                         setCurrentHomeTeamScore(currentScoreHome);
                     }
                     else{
@@ -420,7 +428,7 @@ const handleToggle = (value, homeoraway) => () => {
                     updatePlayerContributions(player.id, newContributions);
                 }
             }
-        }
+        }        
     }
 
     async function updatePlayerGoals(playerid, newgoals) {
@@ -608,7 +616,7 @@ const handleToggle = (value, homeoraway) => () => {
             <View className="Referee">
               <Heading level={3} style={hStyle}>Score:</Heading>     
               
-              <Flex direction="row" justifyContent="center"  >          
+              <Flex direction="row" justifyContent="center"  >                   
               <Heading level={4} style={hStyle}>{currentHomeTeamScore} - </Heading>
               <Heading level={4} style={{ color: 'green'}}>{currentAwayTeamScore}</Heading>
               </Flex>
@@ -730,7 +738,7 @@ const handleToggle = (value, homeoraway) => () => {
   }
   else{
     return refereeSelection();
-  }  
+  }
 };
 
 export default (Referee);
