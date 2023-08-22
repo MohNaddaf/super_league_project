@@ -312,7 +312,6 @@ const Admin = ({ signOut }) => {
                                         <ExpandMore />                                    
                                     </ListItem>
                                     <Collapse in={true} timeout="auto" unmountOnExit>
-                                        {console.log(topPlayersForPositionForWeek)}
                                         <List component="div" disablePadding>
                                         {topPlayersForPositionForWeek[value]!=undefined && (topPlayersForPositionForWeek[value].map((player) => {
                                             return (

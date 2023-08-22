@@ -414,6 +414,14 @@ const handleToggle = (value, homeoraway) => () => {
                     newAssists = player.assists + ",0";
                     updatePlayerAssists(player.id, newAssists);
                 }
+                else if (assistsToList.length < gamesplayed){
+                    newAssists=player.assists;
+                    while(assistsToList.length<=gamesplayed){
+                        newAssists = newAssists + ",0";
+                        assistsToList.push("0");
+                    }
+                    updatePlayerAssists(player.id, newAssists);
+                }
             }
 
 
@@ -425,6 +433,14 @@ const handleToggle = (value, homeoraway) => () => {
                 var contributionsToList = player.contributions.split(",");
                 if (contributionsToList.length == gamesplayed) {
                     newContributions = player.contributions + ",0";
+                    updatePlayerContributions(player.id, newContributions);
+                }
+                else if (contributionsToList.length < gamesplayed){
+                    newContributions=player.contributions;
+                    while(contributionsToList.length<=gamesplayed){
+                        newContributions = newContributions + ",0";
+                        contributionsToList.push("0");
+                    }
                     updatePlayerContributions(player.id, newContributions);
                 }
             }
