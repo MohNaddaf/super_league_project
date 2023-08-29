@@ -7,6 +7,7 @@ import {
   View
 } from "@aws-amplify/ui-react";
 import * as queries from "./graphql/queries";
+import * as mutations from "./graphql/mutations";
 import CalculateStats from "./CalculateStats";
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
@@ -210,6 +211,23 @@ const Admin = ({ signOut }) => {
 
     function removePlayers() {
         console.log(selectedPlayers);
+        for (var i=0; i<selectedPlayers.length;i++) {
+            removePlayerFromRoster(selectedPlayers[i]);
+        }
+    }
+
+    async function removePlayerFromRoster(playerid) {
+        const informationToUpdate = {
+            id: playerid,
+            onRoster: false
+        };
+
+        const playerReturned = await API.graphql({ 
+            query: mutations.updateRegisteredPlayers, 
+            variables: { input: informationToUpdate }
+        });
+
+        fetchPlayers(); 
     }
 
     function adminOptions() {

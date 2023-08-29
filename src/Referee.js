@@ -99,7 +99,7 @@ const handleToggle = (value, homeoraway) => () => {
         }
         else{     
             fetchPlayers();
-            setIsReffing(true);        
+            setIsReffing(true);              
         }    
     }
 
@@ -185,13 +185,13 @@ const handleToggle = (value, homeoraway) => () => {
     }
 
     async function fetchPlayers() {            
-        API.graphql(graphqlOperation(queries.listRegisteredPlayers, { filter: { teamid: { eq: homeTeamID }}})).then((response) => {
+        API.graphql(graphqlOperation(queries.listRegisteredPlayers, { filter: { teamid: { eq: homeTeamID }, onRoster: { eq: true }}})).then((response) => {
             const homeTeamPlayersFromAPI = response.data.listRegisteredPlayers.items;
             setHomeTeamPlayers(homeTeamPlayersFromAPI);           
             setPlayerStatsGameStart(homeTeamPlayersFromAPI, homeTeamGamesPlayed, true); 
         });  
 
-        API.graphql(graphqlOperation(queries.listRegisteredPlayers, { filter: { teamid: { eq: awayTeamID }}})).then((response) => {
+        API.graphql(graphqlOperation(queries.listRegisteredPlayers, { filter: { teamid: { eq: awayTeamID }, onRoster: { eq: true }}})).then((response) => {
             const awayTeamPlayersFromAPI = response.data.listRegisteredPlayers.items;
             setAwayTeamPlayers(awayTeamPlayersFromAPI);   
             setPlayerStatsGameStart(awayTeamPlayersFromAPI, awayTeamGamesPlayed, false);         
@@ -376,6 +376,9 @@ const handleToggle = (value, homeoraway) => () => {
 
             if (player.goals=="" || player.goals==undefined) {
                 newGoals="0";
+                for (var x=0; x<gamesplayed; x++){
+                    newGoals = newGoals + ",0";
+                }
                 updatePlayerGoals(player.id, newGoals, true);
             }
             else {
@@ -406,6 +409,9 @@ const handleToggle = (value, homeoraway) => () => {
 
             if (player.assists=="" || player.assists==undefined) {
                 newAssists="0";
+                for (var x=0; x<gamesplayed; x++){
+                    newAssists = newAssists + ",0";
+                }
                 updatePlayerAssists(player.id, newAssists, true);
             }
             else {
@@ -427,6 +433,9 @@ const handleToggle = (value, homeoraway) => () => {
 
             if (player.contributions=="" || player.contributions==undefined) {
                 newContributions="0";
+                for (var x=0; x<gamesplayed; x++){
+                    newContributions = newContributions + ",0";
+                }
                 updatePlayerContributions(player.id, newContributions, true);
             }
             else {
