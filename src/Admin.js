@@ -1,357 +1,249 @@
 import React, { useState, useEffect } from "react";
 import "./Referee.css";
 import "@aws-amplify/ui-react/styles.css";
-import { API, graphqlOperation} from "aws-amplify";
 import {
   Button,
   Flex,
-  Heading,
-  View,
-  SelectField,
-  TextField
+  View
 } from "@aws-amplify/ui-react";
-
 import * as queries from "./graphql/queries";
-import { listSeasons} from "./graphql/queries";
+import CalculateStats from "./CalculateStats";
+import Box from '@mui/material/Box';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
+import { DataGrid, GridToolbar, gridClasses} from "@mui/x-data-grid";
+import { alpha, styled } from '@mui/material/styles';
+import { API, graphqlOperation} from "aws-amplify";
 import { Dimensions } from "react-native"
 
-import ListSubheader from '@mui/material/ListSubheader';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemText from '@mui/material/ListItemText';
-import ListItemAvatar from '@mui/material/ListItemAvatar';
-import Avatar from '@mui/material/Avatar';
-import SportsSoccerIcon from '@mui/icons-material/SportsSoccer';
-import PersonIcon from '@mui/icons-material/Person';
-import Collapse from '@mui/material/Collapse';
-import InboxIcon from '@mui/icons-material/MoveToInbox';
-import ExpandMore from '@mui/icons-material/ExpandMore';
-import StarBorder from '@mui/icons-material/StarBorder';
-
 const Admin = ({ signOut }) => {
-    const [selectedSeason, setSelectedSeason] = useState("");
-    const [selectedDivision, setSelectedDivision] = useState("");
-    const [selectedGameNumber, setSelectedGameNumber] = useState("");
-    const [topGoalScorers, setTopGoalScorers] = useState([]);
-    const [topPlayersForWeek, setTopPlayersForWeek] = useState([]);
-    const [topPlayersForPositionForWeek, setTopPlayersForPositionForWeek] = useState({});
-    const [allPositions, setAllPositions] = useState(["Center back / Defense", "Center Midfield", "Right Midfield", "Left Midfield", "Striker"]);
+    const [value, setValue] = React.useState(0);
+    const [rows, setRows] = React.useState([]);
 
-    
-    const hStyle = { color: 'orange', 'font-size': `18px`};
-    const textboxStyle = {
-        backgroundColor: 'white',
-        border: `1px solid`,
-        width: Dimensions.get('window').width / 100 * 60,
-        margin: '1rem 0'
-    };
+    const columns = [
+        { field: "id", hide: true },
+        { field: "fname", headerName: "First Name", width: 150 },
+        { field: "lname", headerName: "Last Name", width: 150 },
+        { field: "teamname", headerName: "Team Name", width: 150 },
+        { field: "season", headerName: "Season", width: 150 },
+        { field: "division", headerName: "Division", width: 150 },
+        { field: "year", headerName: "Year", width: 150 },
+        { field: "onroster", headerName: "Is On Roster", width: 150 }
+    ];
+
+    var selectedPlayers = [];
 
     useEffect(() => {
-        fetchSeasons();
-        fetchDivisions();
+        fetchPlayers();         
     }, []);
-   
-    async function fetchSeasons() {
-        API.graphql(graphqlOperation(listSeasons, { filter: { year: { eq: new Date().getFullYear() }}})).then((response) => {
-            const seasonsFromAPI = response.data.listSeasons.items;
-            createSeasons(seasonsFromAPI);      
-        });    
+
+    function customCheckbox(theme) {
+        return {
+          '& .MuiCheckbox-root svg': {
+            width: 16,
+            height: 16,
+            backgroundColor: 'transparent',
+            border: `1px solid ${
+              theme.palette.mode === 'light' ? '#d9d9d9' : 'rgb(67, 67, 67)'
+            }`,
+            borderRadius: 2,
+          },
+          '& .MuiCheckbox-root svg path': {
+            display: 'none',
+          },
+          '& .MuiCheckbox-root.Mui-checked:not(.MuiCheckbox-indeterminate) svg': {
+            backgroundColor: '#1890ff',
+            borderColor: '#1890ff',
+          },
+          '& .MuiCheckbox-root.Mui-checked .MuiIconButton-label:after': {
+            position: 'absolute',
+            display: 'table',
+            border: '2px solid #fff',
+            borderTop: 0,
+            borderLeft: 0,
+            transform: 'rotate(45deg) translate(-50%,-50%)',
+            opacity: 1,
+            transition: 'all .2s cubic-bezier(.12,.4,.29,1.46) .1s',
+            content: '""',
+            top: '50%',
+            left: '39%',
+            width: 5.71428571,
+            height: 9.14285714,
+          },
+          '& .MuiCheckbox-root.MuiCheckbox-indeterminate .MuiIconButton-label:after': {
+            width: 8,
+            height: 8,
+            backgroundColor: '#1890ff',
+            transform: 'none',
+            top: '39%',
+            border: 0,
+          },
+        };
     }
+      
+    const StyledDataGrid = styled(DataGrid)(({ theme }) => ({
+    border: 0,        
+    color:
+        theme.palette.mode === 'light' ? 'orange' : 'rgba(0,0,0,0.85)',
+    fontFamily: [
+        '-apple-system',
+        'BlinkMacSystemFont',
+        '"Segoe UI"',
+        'Roboto',
+        '"Helvetica Neue"',
+        'Arial',
+        'sans-serif',
+        '"Apple Color Emoji"',
+        '"Segoe UI Emoji"',
+        '"Segoe UI Symbol"',
+    ].join(','),
+    WebkitFontSmoothing: 'auto',
+    letterSpacing: 'normal',
+    '& .MuiDataGrid-columnsContainer': {
+        backgroundColor: theme.palette.mode === 'light' ? '#fafafa' : '#1d1d1d',
+    },
+    '& .MuiDataGrid-iconSeparator': {
+        display: 'none',
+    },
+    '& .MuiDataGrid-columnHeader, .MuiDataGrid-cell': {
+        borderRight: `1px solid ${
+        theme.palette.mode === 'light' ? '#f0f0f0' : '#303030'
+        }`,
+    },
+    '& .MuiDataGrid-columnsContainer, .MuiDataGrid-cell': {
+        borderBottom: `1px solid ${
+        theme.palette.mode === 'light' ? '#f0f0f0' : '#303030'
+        }`,
+    },
+    '& .MuiDataGrid-cell': {
+        color:
+        theme.palette.mode === 'light' ? 'rgba(0,0,0,.85)' : 'rgba(255,255,255,0.65)',
+    },
+    '& .MuiPaginationItem-root': {
+        borderRadius: 0,
+    },
+    ...customCheckbox(theme),
+    }));
 
-    async function fetchDivisions(season) {
-        var apiData = {};
-        if (season=="" || season==undefined) {
-            apiData = await API.graphql(graphqlOperation(queries.listRegisteredTeams, { filter: { year: { eq: new Date().getFullYear() }}}));
-        }
-        else{            
-            apiData = await API.graphql(graphqlOperation(queries.listRegisteredTeams, { filter: { season: { eq: season }, year: { eq: new Date().getFullYear() }}}));
-        }
-        
-        const teamsFromAPI = apiData.data.listRegisteredTeams.items;
-        var divs = [];
-        for (var i=0; i<teamsFromAPI.length;i++) {
-            if (divs.includes(teamsFromAPI[i].divison) == false) {
-                divs.push(teamsFromAPI[i].divison);
-            }
-        }
-
-        createDivisions(divs);
-    }
-
-    function createSeasons(seasons){    
-        var str="<option value=0>SELECT SEASON</option>";
-        for (var i = 0; i < seasons.length; i++){
-            var season = seasons[i];
-            str+="<option value=" + season.season + ">" + season.season + "</option>";      
-        }
-        document.getElementById("allseasons").innerHTML = str;         
-    }
-
-    function createDivisions(divisions){    
-        var str="<option value=0>SELECT DIVISION</option>";
-        for (var i = 0; i < divisions.length; i++){
-            var division = divisions[i];
-            str+="<option value=\"" + division + "\">" + division + "</option>";      
-        }
-        document.getElementById("alldivisions").innerHTML = str;         
-    }
-
-    async function updateDivisions(season) {
-        setSelectedSeason(season);        
-        fetchDivisions(season);        
-    }
-
-    function computeStatistics() {   
-        fetchPlayers();
-    }
-
-    function calculateTopPlayersForWeek(players) {
-        var topPlayers = [];                
-
-        for (var i=0;i<players.length;i++){
-            var player=players[i];
-
-            if (player.goals=="" || player.goals==undefined) {
-                continue;
-            }
-
-            var goalsToList = player.goals.split(",");
-            if (goalsToList[parseInt(selectedGameNumber)-1]==undefined) {
-                continue;
-            }
-
-            var assistsToList = player.assists.split(",");
-            var contributionsToList = player.contributions.split(",");
-            
-            var person = {firstName: player.firstname, lastName:player.lastname, teamName:player.teamname, goals:parseInt(goalsToList[parseInt(selectedGameNumber)-1]), assists: parseInt(assistsToList[parseInt(selectedGameNumber)-1]), contributions: parseInt(contributionsToList[parseInt(selectedGameNumber)-1])};
-            topPlayers.push(person);
-        }                        
-
-        //sort all player goals highest to lowest
-        topPlayers.sort(function(a, b) {
-            var keyA = a.contributions,
-                keyB = b.contributions;
-            
-            if (keyA < keyB) return 1;
-            if (keyA > keyB) return -1;
-            return 0;
-        });
-
-        //select MAX top 5 players
-        setTopPlayersForWeek(topPlayers.slice(0, 5));        
-    }
-  
-    function calculateTopPlayersForEachPositionForWeek(players) {
-        var topPlayers = [];                
-
-        for (var i=0;i<players.length;i++){
-            var player=players[i];
-
-            if (player.goals=="" || player.goals==undefined) {
-                continue;
-            }
-
-            var goalsToList = player.goals.split(",");
-            if (goalsToList[parseInt(selectedGameNumber)-1]==undefined) {
-                continue;
-            }
-
-            var assistsToList = player.assists.split(",");
-            var contributionsToList = player.contributions.split(",");         
-            var person = {firstName: player.firstname, lastName:player.lastname, teamName:player.teamname, goals:parseInt(goalsToList[parseInt(selectedGameNumber)-1]), assists: parseInt(assistsToList[parseInt(selectedGameNumber)-1]), contributions: parseInt(contributionsToList[parseInt(selectedGameNumber)-1])};
-
-            if (!(player.position in topPlayers)){
-                topPlayers[player.position] = [person];            
-            }
-            else{
-                topPlayers[player.position].push(person);
-            }
-        }
-
-        for (const key in topPlayers){
-            topPlayers[key].sort(function(a, b) {
-                var keyA = a.contributions,
-                    keyB = b.contributions;
-                
-                if (keyA < keyB) return 1;
-                if (keyA > keyB) return -1;
-                return 0;
-            });
-        }
-        
-        for (const key in topPlayers) {
-            topPlayers[key] = topPlayers[key].slice(0, 5);
-        }
-
-        setTopPlayersForPositionForWeek(topPlayers);    
-    }
-
-    function calculateTopGoalScorers(players) {
-        var topScorers = [];                
-
-        for (var i=0;i<players.length;i++){
-            var player=players[i];
-            var totalGoals=0;
-            if (player.goals=="" || player.goals==undefined) {
-                continue;
-            }
-
-            var goalsToList = player.goals.split(",");
-            for (var x=0; x<goalsToList.length; x++) {
-                var goal = parseInt(goalsToList[x]);
-                totalGoals+=goal;
-            }
-            
-            var person = {firstName: player.firstname, lastName:player.lastname, teamName:player.teamname, goals:totalGoals};
-            topScorers.push(person);
-        }
-        
-        //sort all player goals highest to lowest
-        topScorers.sort(function(a, b) {
-            var keyA = a.goals,
-                keyB = b.goals;
-            
-            if (keyA < keyB) return 1;
-            if (keyA > keyB) return -1;
-            return 0;
-        });
-
-        //select MAX top 5 players
-        setTopGoalScorers(topScorers.slice(0, 5));              
-    }
-
-    async function fetchPlayers() {            
-        API.graphql(graphqlOperation(queries.listRegisteredPlayers, { filter: {season: { eq: selectedSeason }, division: { eq: selectedDivision }}})).then((response) => {
+    async function fetchPlayers() {
+        API.graphql(graphqlOperation(queries.listRegisteredPlayers)).then((response) => {
             const playersFromAPI = response.data.listRegisteredPlayers.items;
-            calculateTopPlayersForWeek(playersFromAPI);
-            calculateTopGoalScorers(playersFromAPI);
-            calculateTopPlayersForEachPositionForWeek(playersFromAPI);
-        });          
+            createPlayersTable(playersFromAPI);
+        });  
     }
 
-    function adminPage()   {          
+
+    function createPlayersTable(players) {
+        var allRows = [];
+
+        for (var i=0; i<players.length;i++){
+            var player = players[i];
+            var row = {
+                id: player.id,
+                fname: player.firstname,
+                lname: player.lastname,
+                teamname: player.teamname,
+                season: player.season,
+                division: player.division,
+                year: player.year,
+                onroster: player.onRoster
+            }
+
+            allRows.push(row);            
+        }
+
+        setRows(allRows);
+        /*
+        const rows = [
+        { id: 1, col1: "Hello", col2: "World" },
+        { id: 2, col1: "MUI X", col2: "is awesome" },
+        { id: 3, col1: "Material UI", col2: "is amazing" },
+        { id: 4, col1: "MUI", col2: "" },
+        { id: 5, col1: "Joy UI", col2: "is awesome" },
+        { id: 6, col1: "MUI Base", col2: "is amazing" }
+        ];
+        */
+    }            
+
+    const handleChange = (event, newValue) => {
+        // event.type can be equal to focus with selectionFollowsFocus.
+        if (
+          event.type !== 'click' ||
+          (event.type === 'click' && samePageLinkNavigation(event))
+        ) {
+          setValue(newValue);          
+        }
+      };
+
+    function samePageLinkNavigation(event) {
+        if (
+          event.defaultPrevented ||
+          event.button !== 0 || // ignore everything but left-click
+          event.metaKey ||
+          event.ctrlKey ||
+          event.altKey ||
+          event.shiftKey
+        ) {
+          return false;
+        }
+        return true;
+    }
+
+    function LinkTab(props) {
         return (
-            <View className="Referee">
-                <Flex direction="row" justifyContent="center" >
-                    <SelectField
-                        id="allseasons"
-                        name="allseasons"
-                        placeholder="SELECT SEASON"
-                        label="seasons"
-                        labelHidden
-                        variation="quiet"
-                        required
-                        inputStyles={textboxStyle}
-                        onChange={(e) => updateDivisions(e.target.value)}
-                        >                                   
-                        <option value="placeholder">placeholder</option>
-                    </SelectField>
-                </Flex>
+          <Tab
+            component="a"
+            onClick={(event) => {
+              // Routing libraries handle this, you can remove the onClick handle when using them.
+              if (samePageLinkNavigation(event)) {
+                event.preventDefault();
+              }
+            }}
+            {...props}
+          />
+        );
+      }
 
-                <Flex direction="row" justifyContent="center" >
-                    <SelectField
-                        id="alldivisions"
-                        name="alldivisions"
-                        placeholder="SELECT DIVISION"
-                        label="position"
-                        labelHidden
-                        variation="quiet"
-                        required              
-                        inputStyles={textboxStyle}
-                        onChange={(e) => setSelectedDivision(e.target.value)}
-                        >
-                        <option value="Div A">Div A</option>
-                        <option value="Div B">Div B</option>
-                        <option value="PREM">PREM</option>
-                        <option value="COED">COED</option>
-                    </SelectField>
-                </Flex>          
+    function handleRowSelection(e) {       
+        selectedPlayers = e;                      
+    }
 
-                <Flex direction="row" justifyContent="center" >
-                    <TextField
-                        name="gamenumber"
-                        placeholder="Game Number (required)"
-                        label="Game Number"
-                        labelHidden
-                        variation="quiet"
-                        required
-                        inputStyles={textboxStyle}
-                        onChange={(e) => setSelectedGameNumber(e.target.value)}
-                    />
-                </Flex>                                                       
-    
-                <Button onClick={computeStatistics} type="submit" variation="primary">
-                Calculate Statistics
-                </Button>
+    function removePlayers() {
+        console.log(selectedPlayers);
+    }
+
+    function adminOptions() {
+        return (
+            <div>
+                <Box className="Refereee" sx={{ width: '100%', backgroundColor: 'orange', margin:'' }}>
+                    <Tabs value={value} onChange={handleChange} aria-label="nav tabs example">
+                        <LinkTab  label="Calculate Player Stats"/>
+                        <LinkTab label="Remove Players"/>                        
+                    </Tabs>
+                </Box>
                 
-                <Flex direction="row" justifyContent="left" margin={"10rem"} inputStyles={textboxStyle}>             
-                    <List sx={{ width: '100%', maxWidth: Dimensions.get('window').width/4, bgcolor: 'background.paper' }} subheader={<ListSubheader style={hStyle} component="div" id="top-5-players-for-week-subheader">Top Players for Week {selectedGameNumber}</ListSubheader>}>
-                        {topPlayersForWeek.map((value) => {
-                            return (
-                                <ListItem>
-                                    <ListItemAvatar>
-                                    <Avatar>
-                                        <PersonIcon />
-                                    </Avatar>
-                                    </ListItemAvatar>
-                                    <ListItemText primary={`${value.firstName} ${value.lastName} with ${value.goals} goals and ${value.assists} assists`} secondary={`${value.teamName}`} />
-                                </ListItem>
-                            );
-                        })}
-                    </List>
+                {value == 0 ? <CalculateStats/> : 
+                <div style={{ height: Dimensions.get('window').height / 100 * 60, width: "100%" }}>
+                    <StyledDataGrid onRowSelectionModelChange={handleRowSelection} checkboxSelection disableColumnFilter disableColumnMenu disableDensitySelector disableColumnSelector rows={rows} columns={columns} slots={{ toolbar: GridToolbar }}
+                        slotProps={{                    
+                            toolbar: {                        
+                                showQuickFilter: true,
+                                printOptions: { disableToolbarButton: true },
+                                csvOptions: { disableToolbarButton: true },
+                                quickFilterProps: { debounceMs: 250 },
+                            },
+                        }}
+                    />
+                    <Button variation="primary" onClick={removePlayers} style={{ margin: 10, backgroundColor: 'red'}}>Remove Players From Roster</Button>
 
-                    <List sx={{ width: '100%', maxWidth: Dimensions.get('window').width/4, bgcolor: 'background.paper' }} subheader={<ListSubheader style={hStyle} component="div" id="top-5-goal-scorers-for-week-subheader">Top Goal Scorers for Week {selectedGameNumber}</ListSubheader>}>
-                        {allPositions.map((value) => {
-                            return (
-                                <>
-                                    <ListItem>
-                                        <SportsSoccerIcon>
-                                        <InboxIcon />
-                                        </SportsSoccerIcon>
-                                        <ListItemText primary={value} />
-                                        <ExpandMore />                                    
-                                    </ListItem>
-                                    <Collapse in={true} timeout="auto" unmountOnExit>
-                                        <List component="div" disablePadding>
-                                        {topPlayersForPositionForWeek[value]!=undefined && (topPlayersForPositionForWeek[value].map((player) => {
-                                            return (
-                                                <ListItem sx={{ pl: 4 }}>
-                                                    <PersonIcon>
-                                                    <StarBorder />
-                                                    </PersonIcon>
-                                                    <ListItemText primary={`${player.firstName} ${player.lastName} with ${player.goals} goals and ${player.assists} assists`} secondary={`${player.teamName}`} />
-                                                </ListItem>
-                                            );
-                                            }))}
-                                        
-                                        </List>
-                                    </Collapse>
-                                </>
-                                
-                            );
-                        })}
-                    </List>
+              </div>
+              }
 
-                    <List sx={{ width: '100%', maxWidth: Dimensions.get('window').width/4, bgcolor: 'background.paper' }} subheader={<ListSubheader style={hStyle} component="div" id="top-5-goal-scorers-subheader">Top Goal Scorers So Far</ListSubheader>}>
-                        {topGoalScorers.map((value) => {
-                            return (
-                                <ListItem>
-                                    <ListItemAvatar>
-                                    <Avatar>
-                                        <PersonIcon />
-                                    </Avatar>
-                                    </ListItemAvatar>
-                                    <ListItemText primary={`${value.firstName} ${value.lastName} with ${value.goals} goals`} secondary={`${value.teamName}`} />
-                                </ListItem>
-                            );
-                        })}
-                    </List>
-                </Flex>        
-            </View>                        
+            </div>
         );
     }
 
-    return adminPage();
+    return adminOptions();
 };
 
 export default (Admin);

@@ -376,13 +376,13 @@ const handleToggle = (value, homeoraway) => () => {
 
             if (player.goals=="" || player.goals==undefined) {
                 newGoals="0";
-                updatePlayerGoals(player.id, newGoals);
+                updatePlayerGoals(player.id, newGoals, true);
             }
             else {
                 var goalsToList = player.goals.split(",");
                 if (goalsToList.length == gamesplayed) {
                     newGoals = player.goals + ",0";
-                    updatePlayerGoals(player.id, newGoals);
+                    updatePlayerGoals(player.id, newGoals, true);
                 }
                 else if (goalsToList.length < gamesplayed){                    
                     newGoals=player.goals;
@@ -390,7 +390,7 @@ const handleToggle = (value, homeoraway) => () => {
                         newGoals = newGoals + ",0";
                         goalsToList.push("0");
                     }
-                    updatePlayerGoals(player.id, newGoals);
+                    updatePlayerGoals(player.id, newGoals, true);
                 }
                 else{
                     if(isHomeTeam){
@@ -406,13 +406,13 @@ const handleToggle = (value, homeoraway) => () => {
 
             if (player.assists=="" || player.assists==undefined) {
                 newAssists="0";
-                updatePlayerAssists(player.id, newAssists);
+                updatePlayerAssists(player.id, newAssists, true);
             }
             else {
                 var assistsToList = player.assists.split(",");
                 if (assistsToList.length == gamesplayed) {
                     newAssists = player.assists + ",0";
-                    updatePlayerAssists(player.id, newAssists);
+                    updatePlayerAssists(player.id, newAssists, true);
                 }
                 else if (assistsToList.length < gamesplayed){
                     newAssists=player.assists;
@@ -420,20 +420,20 @@ const handleToggle = (value, homeoraway) => () => {
                         newAssists = newAssists + ",0";
                         assistsToList.push("0");
                     }
-                    updatePlayerAssists(player.id, newAssists);
+                    updatePlayerAssists(player.id, newAssists, true);
                 }
             }
 
 
             if (player.contributions=="" || player.contributions==undefined) {
                 newContributions="0";
-                updatePlayerContributions(player.id, newContributions);
+                updatePlayerContributions(player.id, newContributions, true);
             }
             else {
                 var contributionsToList = player.contributions.split(",");
                 if (contributionsToList.length == gamesplayed) {
                     newContributions = player.contributions + ",0";
-                    updatePlayerContributions(player.id, newContributions);
+                    updatePlayerContributions(player.id, newContributions, true);
                 }
                 else if (contributionsToList.length < gamesplayed){
                     newContributions=player.contributions;
@@ -441,13 +441,13 @@ const handleToggle = (value, homeoraway) => () => {
                         newContributions = newContributions + ",0";
                         contributionsToList.push("0");
                     }
-                    updatePlayerContributions(player.id, newContributions);
+                    updatePlayerContributions(player.id, newContributions, true);
                 }
             }
         }        
     }
 
-    async function updatePlayerGoals(playerid, newgoals) {
+    async function updatePlayerGoals(playerid, newgoals, freshStart) {
         const informationToUpdate = {
             id: playerid,
             goals: newgoals
@@ -458,10 +458,12 @@ const handleToggle = (value, homeoraway) => () => {
             variables: { input: informationToUpdate }
         });
 
-        fetchCurrentPlayer(playerid);
+        if (freshStart == false) {
+            fetchCurrentPlayer(playerid);
+        }        
     }
 
-    async function updatePlayerAssists(playerid, newassists) {
+    async function updatePlayerAssists(playerid, newassists, freshStart) {
         const informationToUpdate = {
             id: playerid,
             assists: newassists
@@ -472,10 +474,12 @@ const handleToggle = (value, homeoraway) => () => {
             variables: { input: informationToUpdate }
         });
 
-        fetchCurrentPlayer(playerid);
+        if (freshStart == false) {
+            fetchCurrentPlayer(playerid);
+        } 
     }
 
-    async function updatePlayerContributions(playerid, newcontributions) {
+    async function updatePlayerContributions(playerid, newcontributions, freshStart) {
         const informationToUpdate = {
             id: playerid,
             contributions: newcontributions
@@ -486,13 +490,17 @@ const handleToggle = (value, homeoraway) => () => {
             variables: { input: informationToUpdate }
         });
 
-        fetchCurrentPlayer(playerid);
+        if (freshStart == false) {
+            fetchCurrentPlayer(playerid);
+        }
     }    
 
-    function setPlayerStats(player) {                
+    function setPlayerStats(player) {         
+        console.log(player);       
         var gameNumber = selectedTeam == "Home" ? homeTeamGamesPlayed : awayTeamGamesPlayed;
 
         var goalsToList = player.goals.split(",");
+        console.log(goalsToList);
         var assistsToList = player.assists.split(",");
 
         setCurrentGoals(parseInt(goalsToList[gameNumber]));
@@ -510,10 +518,10 @@ const handleToggle = (value, homeoraway) => () => {
         var id = currentPlayer.id;
     
         goalsToList[gameNumber] = parseInt(goalsToList[gameNumber]) + 1;
-        updatePlayerGoals(id, goalsToList.toString());
+        updatePlayerGoals(id, goalsToList.toString(), false);
 
         contributions[gameNumber] = parseInt(goalsToList[gameNumber]) + parseInt(assistsToList[gameNumber]);
-        updatePlayerContributions(id, contributions.toString());
+        updatePlayerContributions(id, contributions.toString(), false);
         if (selectedTeam == "Home") {
             var newScore = currentHomeTeamScore+1;
             setCurrentHomeTeamScore(newScore);
@@ -535,10 +543,10 @@ const handleToggle = (value, homeoraway) => () => {
         var id = currentPlayer.id;
 
         assistsToList[gameNumber] = parseInt(assistsToList[gameNumber]) + 1;
-        updatePlayerAssists(id, assistsToList.toString());
+        updatePlayerAssists(id, assistsToList.toString(), false);
 
         contributions[gameNumber] = parseInt(goalsToList[gameNumber]) + parseInt(assistsToList[gameNumber]);
-        updatePlayerContributions(id, contributions.toString());
+        updatePlayerContributions(id, contributions.toString(), false);
     }
 
     function removeGoal(event) {
@@ -553,10 +561,10 @@ const handleToggle = (value, homeoraway) => () => {
 
         if (goalsToList[gameNumber]!=0) {
             goalsToList[gameNumber] = parseInt(goalsToList[gameNumber]) - 1;
-            updatePlayerGoals(id, goalsToList.toString());
+            updatePlayerGoals(id, goalsToList.toString(), false);
 
             contributions[gameNumber] = parseInt(goalsToList[gameNumber]) + parseInt(assistsToList[gameNumber]);
-            updatePlayerContributions(id, contributions.toString());
+            updatePlayerContributions(id, contributions.toString(), false);
 
             if (selectedTeam == "Home") {
                 var newScore = currentHomeTeamScore-1;
@@ -581,10 +589,10 @@ const handleToggle = (value, homeoraway) => () => {
 
         if (assistsToList[gameNumber]!=0) {
             assistsToList[gameNumber] = parseInt(assistsToList[gameNumber]) - 1;
-            updatePlayerAssists(id, assistsToList.toString());
+            updatePlayerAssists(id, assistsToList.toString(), false);
 
             contributions[gameNumber] = parseInt(goalsToList[gameNumber]) + parseInt(assistsToList[gameNumber]);
-            updatePlayerContributions(id, contributions.toString());
+            updatePlayerContributions(id, contributions.toString(), false);
         }
     }
 

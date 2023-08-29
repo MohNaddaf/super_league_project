@@ -34,26 +34,37 @@ const PlayerRegistration = ({ signOut }) => {
   const [seasons, setSeasons] = useState([]);
   const [checked, setChecked] = React.useState(false);
   const [hasError, setHasError] = React.useState(false);
-  
+  const [selectedDivision, setSelectedDivision] = useState("");
+  const [selectedSeason, setSelectedSeason] = useState("");
+
   useEffect(() => {
     fetchTeams();
     fetchSeasons();
+    fetchDivisions();
   }, []);
 
-  async function fetchTeams(season) {
-
+  async function fetchTeams(season, division) {    
     var apiData = {};
-    if (season==undefined) {
-        apiData = await API.graphql(graphqlOperation(queries.listRegisteredTeams, { filter: { year: { eq: new Date().getFullYear() }}}));
+
+    if (season==undefined || season=="") {
+        if (division==undefined || division==""){
+          apiData = await API.graphql(graphqlOperation(queries.listRegisteredTeams, { filter: { year: { eq: new Date().getFullYear() }}}));
+        }
+        else{
+          apiData = await API.graphql(graphqlOperation(queries.listRegisteredTeams, { filter: { divison: { eq: division }, year: { eq: new Date().getFullYear() }}}));
+        }
+    }
+    else if (division==undefined || division=="") {
+      apiData = await API.graphql(graphqlOperation(queries.listRegisteredTeams, { filter: { season: { eq: season }, year: { eq: new Date().getFullYear() }}}));
     }
     else{
-        apiData = await API.graphql(graphqlOperation(queries.listRegisteredTeams, { filter: { season: { eq: season }, year: { eq: new Date().getFullYear() }}}));
+        apiData = await API.graphql(graphqlOperation(queries.listRegisteredTeams, { filter: { season: { eq: season }, divison: { eq: division }, year: { eq: new Date().getFullYear() }}}));
     }
 
     const teamsFromAPI = apiData.data.listRegisteredTeams.items;
     setTeams(teamsFromAPI);
     createTeams(teamsFromAPI);
-  }
+  }  
 
   async function fetchSeasons() {
     API.graphql(graphqlOperation(listSeasons, { filter: { year: { eq: new Date().getFullYear() }}})).then((response) => {
@@ -61,6 +72,37 @@ const PlayerRegistration = ({ signOut }) => {
       setSeasons(seasonsFromAPI);      
       createSeasons(seasonsFromAPI);      
     });    
+  }
+
+  async function fetchDivisions(season) {
+    var apiData = {};
+    if (season=="" || season==undefined) {
+        apiData = await API.graphql(graphqlOperation(queries.listRegisteredTeams));
+    }
+    else{            
+        apiData = await API.graphql(graphqlOperation(queries.listRegisteredTeams, { filter: { season: { eq: season }}}));
+    }
+    
+    const teamsFromAPI = apiData.data.listRegisteredTeams.items;
+    var divs = [];
+    for (var i=0; i<teamsFromAPI.length;i++) {
+        if (divs.includes(teamsFromAPI[i].divison) == false) {
+            divs.push(teamsFromAPI[i].divison);
+        }
+    }
+
+    createDivisions(divs);
+  }
+
+  async function updateDivisionsAndTeams(season) {
+    setSelectedSeason(season);        
+    fetchDivisions(season);
+    fetchTeams(season);
+  }
+
+  async function updateTeams(division) {
+    setSelectedDivision(division);        
+    fetchTeams(selectedSeason, division);
   }
 
   function createTeams(teams){    
@@ -79,6 +121,15 @@ const PlayerRegistration = ({ signOut }) => {
       str+="<option value=" + season.season + ">" + season.season + "</option>";      
     }
     document.getElementById("allseasons").innerHTML = str;         
+  }
+
+  function createDivisions(divisions){    
+    var str="<option value=0>SELECT DIVISION</option>";
+    for (var i = 0; i < divisions.length; i++){
+        var division = divisions[i];
+        str+="<option value=\"" + division + "\">" + division + "</option>";      
+    }
+    document.getElementById("alldivisions").innerHTML = str;         
   }
 
   async function createRegisteredPlayer(event) {
@@ -124,7 +175,9 @@ const PlayerRegistration = ({ signOut }) => {
           email: form.get("email"),
           teamid: teamID,
           phonenumber: form.get("phone"),
-          instagramhandle: form.get("instagram")
+          instagramhandle: form.get("instagram"),
+          year: new Date().getFullYear(),
+          onRoster: true
         };
 
         console.log(data);
@@ -136,7 +189,9 @@ const PlayerRegistration = ({ signOut }) => {
 
         alert("Player " + data.firstname + " " + data.lastname + " added successfully");
 
-        event.target.reset();      
+        event.target.reset();
+
+        window.location.reload();
       }
     }
   }
@@ -152,7 +207,7 @@ const PlayerRegistration = ({ signOut }) => {
   return (
     <View className="PlayerRegistration">
       
-      <Heading level={1} style={hStyle}>Fill the form Below to be added to your teams roster </Heading>      
+      <Heading level={1} style={hStyle}>Fill the form Below to be added to your teams roster </Heading>  
       
       <View as="form" margin="3rem 0" onSubmit={createRegisteredPlayer}>      
           <Flex direction="row" justifyContent="center" alignItems="left">     
@@ -206,10 +261,29 @@ const PlayerRegistration = ({ signOut }) => {
               variation="quiet"
               required
               inputStyles={textboxStyle}
-              onChange={(e) => fetchTeams(e.target.value)}
+              onChange={(e) => updateDivisionsAndTeams(e.target.value)}
               >                                   
               <option value="placeholder">placeholder</option>
             </SelectField>
+          </Flex>
+
+          <Flex direction="row" justifyContent="center" >
+              <SelectField
+                  id="alldivisions"
+                  name="alldivisions"
+                  placeholder="SELECT DIVISION"
+                  label="position"
+                  labelHidden
+                  variation="quiet"
+                  required              
+                  inputStyles={textboxStyle}
+                  onChange={(e) => updateTeams(e.target.value)}
+                  >
+                  <option value="Div A">Div A</option>
+                  <option value="Div B">Div B</option>
+                  <option value="PREM">PREM</option>
+                  <option value="COED">COED</option>
+              </SelectField>
           </Flex>
 
           <Flex direction="row" justifyContent="center" >

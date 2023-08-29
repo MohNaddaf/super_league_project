@@ -130,6 +130,8 @@ export const getRegisteredPlayers = /* GraphQL */ `
       totalgoals
       totalassists
       totalcontributions
+      year
+      onRoster
       createdAt
       updatedAt
       __typename
@@ -166,6 +168,8 @@ export const listRegisteredPlayers = /* GraphQL */ `
         totalgoals
         totalassists
         totalcontributions
+        year
+        onRoster
         createdAt
         updatedAt
         __typename

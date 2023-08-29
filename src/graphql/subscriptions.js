@@ -150,6 +150,8 @@ export const onCreateRegisteredPlayers = /* GraphQL */ `
       totalgoals
       totalassists
       totalcontributions
+      year
+      onRoster
       createdAt
       updatedAt
       __typename
@@ -179,6 +181,8 @@ export const onUpdateRegisteredPlayers = /* GraphQL */ `
       totalgoals
       totalassists
       totalcontributions
+      year
+      onRoster
       createdAt
       updatedAt
       __typename
@@ -208,6 +212,8 @@ export const onDeleteRegisteredPlayers = /* GraphQL */ `
       totalgoals
       totalassists
       totalcontributions
+      year
+      onRoster
       createdAt
       updatedAt
       __typename
