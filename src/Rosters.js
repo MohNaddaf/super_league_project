@@ -147,7 +147,7 @@ const Rosters = ({ signOut }) => {
             return;    
         }
         
-        API.graphql(graphqlOperation(queries.listRegisteredPlayers, { filter: {teamid: { eq: selectedTeam }}})).then((response) => {
+        API.graphql(graphqlOperation(queries.listRegisteredPlayers, { filter: {teamid: { eq: selectedTeam }, onRoster: { eq: true }}})).then((response) => {
             const playersFromAPI = response.data.listRegisteredPlayers.items;
             API.graphql(graphqlOperation(queries.listRegisteredTeams, { filter: {id: { eq: selectedTeam }}})).then((response) => {            
                 setSelectedTeamName(response.data.listRegisteredTeams.items[0].teamname);                

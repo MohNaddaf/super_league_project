@@ -47,6 +47,12 @@ const [currentAssists, setCurrentAssists] = useState(0);
 const [currentHomeTeamScore, setCurrentHomeTeamScore] = useState(0);
 const [currentAwayTeamScore, setCurrentAwayTeamScore] = useState(0);
 
+const divisionMapping = {
+    "PREM" : 0,
+    "Div A" : 1,
+    "Div B" : 2
+}
+
 var currentScoreHome = 0;
 var currentScoreAway = 0;
 
@@ -186,17 +192,72 @@ const handleToggle = (value, homeoraway) => () => {
 
     async function fetchPlayers() {            
         API.graphql(graphqlOperation(queries.listRegisteredPlayers, { filter: { teamid: { eq: homeTeamID }, onRoster: { eq: true }}})).then((response) => {
-            const homeTeamPlayersFromAPI = response.data.listRegisteredPlayers.items;
-            setHomeTeamPlayers(homeTeamPlayersFromAPI);           
+            const homeTeamPlayersFromAPI = response.data.listRegisteredPlayers.items;            
+            setHomePlayers(homeTeamPlayersFromAPI);
             setPlayerStatsGameStart(homeTeamPlayersFromAPI, homeTeamGamesPlayed, true); 
         });  
 
         API.graphql(graphqlOperation(queries.listRegisteredPlayers, { filter: { teamid: { eq: awayTeamID }, onRoster: { eq: true }}})).then((response) => {
             const awayTeamPlayersFromAPI = response.data.listRegisteredPlayers.items;
-            setAwayTeamPlayers(awayTeamPlayersFromAPI);   
+            setAwayPlayers(awayTeamPlayersFromAPI);
             setPlayerStatsGameStart(awayTeamPlayersFromAPI, awayTeamGamesPlayed, false);         
         });        
     }
+
+    async function setHomePlayers(players) {
+        var allPlayers = [];
+
+        for (var i=0; i<players.length;i++) {
+            var player=players[i];
+
+            var higherDiv = await doesPlayerPlayInHigherDivision(player);
+            
+            var playerToAdd = {
+                id: player.id,
+                firstname: player.firstname,
+                lastname: player.lastname,
+                onHigherDiv: higherDiv
+            };
+            allPlayers.push(playerToAdd);
+        }
+        setHomeTeamPlayers(allPlayers);        
+    }
+
+    async function setAwayPlayers(players) {
+        var allPlayers = [];
+
+        for (var i=0; i<players.length;i++) {
+            var player=players[i];
+
+            var higherDiv = await doesPlayerPlayInHigherDivision(player);
+            
+            var playerToAdd = {
+                id: player.id,
+                firstname: player.firstname,
+                lastname: player.lastname,
+                onHigherDiv: higherDiv
+            };
+            allPlayers.push(playerToAdd);
+        }
+        setAwayTeamPlayers(allPlayers);        
+    }
+
+    async function doesPlayerPlayInHigherDivision(player) {            
+           var playsHigher = false;
+
+            for (var div in divisionMapping){
+                if (divisionMapping[div] < divisionMapping[player.division]){
+                    await API.graphql(graphqlOperation(queries.listRegisteredPlayers, { filter: { season: { eq: player.season }, division: { eq: div }, year: { eq: player.year }, firstname: { eq: player.firstname }, lastname: { eq: player.lastname }}})).then((response) => {
+                        const playerResults = response.data.listRegisteredPlayers.items;
+                        if (playerResults.length > 0){
+                            playsHigher = true;
+                        }
+                    });
+                }
+            }
+            return playsHigher;           
+    }
+
     function createSeasons(seasons){    
         var str="<option value=0>SELECT SEASON</option>";
         for (var i = 0; i < seasons.length; i++){
@@ -679,7 +740,7 @@ const handleToggle = (value, homeoraway) => () => {
                                     sx={{padding: 0.5, margin: 0}}
                                     />
                                 </ListItemIcon>
-                                <ListItemText sx={{padding: 0, margin: 0}} primary={`${value.firstname} ${value.lastname}`} />
+                                {value.onHigherDiv == true ? <ListItemText sx={{padding: 0, margin: 0, color: 'red'}} primary={`${value.firstname} ${value.lastname}`} /> : <ListItemText sx={{padding: 0, margin: 0}} primary={`${value.firstname} ${value.lastname}`} />}
                                 </ListItemButton>
                             </ListItem>
                             );
@@ -703,7 +764,7 @@ const handleToggle = (value, homeoraway) => () => {
                                         sx={{padding: 0.5, margin: 0}}
                                         />
                                     </ListItemIcon>
-                                    <ListItemText sx={{padding: 0, margin: 0}} primary={`${value.firstname} ${value.lastname}`} />
+                                    {value.onHigherDiv == true ? <ListItemText sx={{padding: 0, margin: 0, color: 'red'}} primary={`${value.firstname} ${value.lastname}`} /> : <ListItemText sx={{padding: 0, margin: 0}} primary={`${value.firstname} ${value.lastname}`} />}                                    
                                     </ListItemButton>
                                 </ListItem>
                             );
