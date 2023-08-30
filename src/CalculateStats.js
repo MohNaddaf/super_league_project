@@ -191,16 +191,27 @@ const CalculateStats = ({ signOut }) => {
         for (var i=0;i<players.length;i++){
             var player=players[i];
             var totalGoals=0;
+
             if (player.goals=="" || player.goals==undefined) {
                 continue;
             }
 
             var goalsToList = player.goals.split(",");
-            for (var x=0; x<goalsToList.length; x++) {
-                var goal = parseInt(goalsToList[x]);
-                totalGoals+=goal;
+
+            if (parseInt(selectedGameNumber) >= goalsToList.length ) {
+                for (var x=0; x<goalsToList.length; x++) {
+                    var goal = parseInt(goalsToList[x]);
+                    totalGoals+=goal;
+                }
             }
-            
+
+            else{
+                for (var x=0; x<parseInt(selectedGameNumber); x++) {
+                    var goal = parseInt(goalsToList[x]);
+                    totalGoals+=goal;
+                }
+            }
+                        
             var person = {firstName: player.firstname, lastName:player.lastname, teamName:player.teamname, goals:totalGoals};
             topScorers.push(person);
         }
