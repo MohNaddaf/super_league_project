@@ -4,7 +4,9 @@ import "@aws-amplify/ui-react/styles.css";
 import {
   Button,
   Flex,
-  View
+  View,
+  TextField,
+  SelectField
 } from "@aws-amplify/ui-react";
 import * as queries from "./graphql/queries";
 import * as mutations from "./graphql/mutations";
@@ -15,12 +17,22 @@ import Tab from '@mui/material/Tab';
 import { DataGrid, GridToolbar, gridClasses} from "@mui/x-data-grid";
 import { alpha, styled } from '@mui/material/styles';
 import { API, graphqlOperation} from "aws-amplify";
-import { Dimensions } from "react-native"
+import { Dimensions } from "react-native";
+import { listSeasons } from "./graphql/queries";
+
+import {
+  createRefs as createReferee
+} from "./graphql/mutations";
+
+import {
+  createRegisteredTeams as createTeam
+} from "./graphql/mutations";
 
 const Admin = ({ signOut }) => {
     const [value, setValue] = React.useState(0);
     const [rows, setRows] = React.useState([]);
-
+    const [selectedSeason, setSelectedSeason] = useState("");
+  
     const columns = [
         { field: "id", hide: true },
         { field: "fname", headerName: "First Name", width: 150 },
@@ -32,10 +44,17 @@ const Admin = ({ signOut }) => {
         { field: "onroster", headerName: "Is On Roster", width: 150 }
     ];
 
+    const textboxStyle = {
+      backgroundColor: 'white',
+      border: `1px solid`,
+      width: Dimensions.get('window').width / 100 * 60,
+      margin: '1rem 0'
+    };
+
     var selectedPlayers = [];
 
     useEffect(() => {
-        fetchPlayers();         
+        fetchPlayers();        
     }, []);
 
     function customCheckbox(theme) {
@@ -153,17 +172,7 @@ const Admin = ({ signOut }) => {
             allRows.push(row);            
         }
 
-        setRows(allRows);
-        /*
-        const rows = [
-        { id: 1, col1: "Hello", col2: "World" },
-        { id: 2, col1: "MUI X", col2: "is awesome" },
-        { id: 3, col1: "Material UI", col2: "is amazing" },
-        { id: 4, col1: "MUI", col2: "" },
-        { id: 5, col1: "Joy UI", col2: "is awesome" },
-        { id: 6, col1: "MUI Base", col2: "is amazing" }
-        ];
-        */
+        setRows(allRows);              
     }            
 
     const handleChange = (event, newValue) => {
@@ -172,7 +181,10 @@ const Admin = ({ signOut }) => {
           event.type !== 'click' ||
           (event.type === 'click' && samePageLinkNavigation(event))
         ) {
-          setValue(newValue);          
+          setValue(newValue);
+          if (newValue==3) {            
+            fetchSeasons();
+          }         
         }
       };
 
@@ -230,33 +242,231 @@ const Admin = ({ signOut }) => {
         fetchPlayers(); 
     }
 
+    async function fetchSeasons() {
+      API.graphql(graphqlOperation(listSeasons, { filter: { year: { eq: new Date().getFullYear() }}})).then((response) => {
+        const seasonsFromAPI = response.data.listSeasons.items;            
+        createSeasons(seasonsFromAPI);      
+      });    
+    }
+
+    function createSeasons(seasons){    
+      var str="<option value=0>SELECT SEASON</option>";
+      for (var i = 0; i < seasons.length; i++){
+        var season = seasons[i];
+        str+="<option value=" + season.season + ">" + season.season + "</option>";      
+      }
+      document.getElementById("allseasonsadd").innerHTML = str;
+      console.log("HERE");
+    }  
+
+
+    function removePlayersView() {
+      return (
+        <div style={{ height: Dimensions.get('window').height / 100 * 60, width: "100%" }}>
+            <StyledDataGrid onRowSelectionModelChange={handleRowSelection} checkboxSelection disableColumnFilter disableColumnMenu disableDensitySelector disableColumnSelector rows={rows} columns={columns} slots={{ toolbar: GridToolbar }}
+                slotProps={{                    
+                    toolbar: {                        
+                        showQuickFilter: true,
+                        printOptions: { disableToolbarButton: true },
+                        csvOptions: { disableToolbarButton: true },
+                        quickFilterProps: { debounceMs: 250 },
+                    },
+                }}
+            />
+            <Button variation="primary" onClick={removePlayers} style={{ margin: 10, backgroundColor: 'red'}}>Remove Players From Roster</Button>
+          </div>
+      );
+    }    
+
+    function manageRefView() {
+      return (
+        <div className="Referee">
+        <View as="form"  onSubmit={addRef} style={{width: Dimensions.get('window').width}}> 
+            <Flex direction="row" justifyContent="center" alignItems="left">     
+              <TextField
+                id="fname"
+                name="fname"
+                placeholder="First Name (required)"
+                label="First Name"
+                labelHidden
+                variation="quiet"
+                required
+                inputStyles={textboxStyle}
+              />
+
+            </Flex>
+
+            <Flex direction="row" justifyContent="center" >
+              <TextField
+                id="lname"
+                name="lname"
+                placeholder="Last Name (required)"
+                label="Last Name"
+                labelHidden
+                variation="quiet"
+                required
+                inputStyles={textboxStyle}
+              />    
+            </Flex>
+
+            <Flex direction="row" justifyContent="center" >
+              <TextField
+                id="email"
+                name="email"
+                placeholder="Email (required)"
+                label="Email"
+                labelHidden
+                variation="quiet"
+                required
+                inputStyles={textboxStyle}
+              />    
+            </Flex>
+
+            <Flex direction="row" justifyContent="center" >
+              <TextField
+                id="phone"
+                name="phone"
+                placeholder="Phone Number (required)"
+                label="Phone Number"
+                labelHidden
+                variation="quiet"
+                required
+                inputStyles={textboxStyle}
+              />    
+            </Flex>
+
+            <Button type="submit" variation="primary">
+              ADD REFEREE
+            </Button>
+            </View>
+          </div>
+      );
+    }
+
+    function addTeamView() {
+      return (
+        <div className="Referee">
+          <View as="form"  onSubmit={addTeam} style={{width: Dimensions.get('window').width}}>
+
+            <Flex direction="row" justifyContent="center" >
+                <SelectField
+                  id="allseasonsadd"
+                  name="seasons"
+                  placeholder="SELECT SEASON"
+                  label="seasons"
+                  labelHidden
+                  variation="quiet"
+                  required
+                  inputStyles={textboxStyle}
+                  onChange={(e) => setSelectedSeason(e.target.value)}           
+                  >                                   
+                  <option value="placeholder">placeholder</option>
+                </SelectField>
+              </Flex>
+
+              <Flex direction="row" justifyContent="center" >
+                  <SelectField
+                      id="alldivisions"
+                      name="alldivisions"
+                      placeholder="SELECT DIVISION"
+                      label="position"
+                      labelHidden
+                      variation="quiet"
+                      required              
+                      inputStyles={textboxStyle}                      
+                      >
+                      <option value="Div A">Div A</option>
+                      <option value="Div B">Div B</option>
+                      <option value="PREM">PREM</option>
+                      <option value="COED">COED</option>
+                  </SelectField>
+              </Flex>         
+
+              <Flex direction="row" justifyContent="center" >
+                <TextField
+                  id="teamname"
+                  name="teamname"
+                  placeholder="Team Name (required)"
+                  label="Team Name"
+                  labelHidden
+                  variation="quiet"
+                  required
+                  inputStyles={textboxStyle}
+                />    
+              </Flex>
+
+              <Button type="submit" variation="primary">
+                ADD TEAM
+              </Button>
+            </View>
+          </div>
+      );
+    }
+
+    async function addRef(event) {
+      event.preventDefault();
+
+      var firstname = document.getElementById("fname").value
+      var lastname = document.getElementById("lname").value;
+      var email = document.getElementById("email").value;
+      var phonenumber = document.getElementById("phone").value;
+
+      const data = {
+        firstname: firstname,
+        lastname: lastname,
+        email: email,
+        phonenumber: phonenumber
+      };    
+    
+      await API.graphql({
+        query: createReferee,
+        variables: { input: data },
+      });              
+
+      alert("Ref added succesfully");
+
+      event.target.reset();            
+    }
+
+    async function addTeam(event) {
+      event.preventDefault();
+
+      var division = document.getElementById("alldivisions").value;
+      var teamname = document.getElementById("teamname").value;
+      
+      const data = {
+        divison: division,
+        teamname: teamname,
+        season: selectedSeason,
+        year: new Date().getFullYear(),
+        gamesplayed: 0
+      };
+
+      console.log(data);      
+    
+      await API.graphql({
+        query: createTeam,
+        variables: { input: data },
+      });              
+
+      alert("Team added succesfully");
+
+      event.target.reset();        
+    }
+
     function adminOptions() {
         return (
             <div>
                 <Box className="Refereee" sx={{ width: '100%', backgroundColor: 'orange', margin:'' }}>
                     <Tabs value={value} onChange={handleChange} aria-label="nav tabs example">
                         <LinkTab  label="Calculate Player Stats"/>
-                        <LinkTab label="Remove Players"/>                        
+                        <LinkTab label="Remove Players"/>
+                        <LinkTab label="Add Referees"/>
+                        <LinkTab label="Add Team"/>
                     </Tabs>
                 </Box>
                 
-                {value == 0 ? <CalculateStats/> : 
-                <div style={{ height: Dimensions.get('window').height / 100 * 60, width: "100%" }}>
-                    <StyledDataGrid onRowSelectionModelChange={handleRowSelection} checkboxSelection disableColumnFilter disableColumnMenu disableDensitySelector disableColumnSelector rows={rows} columns={columns} slots={{ toolbar: GridToolbar }}
-                        slotProps={{                    
-                            toolbar: {                        
-                                showQuickFilter: true,
-                                printOptions: { disableToolbarButton: true },
-                                csvOptions: { disableToolbarButton: true },
-                                quickFilterProps: { debounceMs: 250 },
-                            },
-                        }}
-                    />
-                    <Button variation="primary" onClick={removePlayers} style={{ margin: 10, backgroundColor: 'red'}}>Remove Players From Roster</Button>
-
-              </div>
-              }
-
+                {value == 0 ? <CalculateStats/> : value == 1 ? removePlayersView() : value == 2 ? manageRefView() : addTeamView()}              
             </div>
         );
     }

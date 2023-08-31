@@ -79,9 +79,9 @@ const awayteamstyle = {
 }
 
 const handleToggle = (value, homeoraway) => () => {     
-    setPlayerID(value.id);
-    fetchCurrentPlayer(value.id);
+    setPlayerID(value.id);        
     setSelectedTeam(homeoraway);
+    fetchCurrentPlayer(value.id);
 };
 
     useEffect(() => {
@@ -565,12 +565,10 @@ const handleToggle = (value, homeoraway) => () => {
         }
     }    
 
-    function setPlayerStats(player) {         
-        console.log(player);       
+    function setPlayerStats(player) { 
         var gameNumber = selectedTeam == "Home" ? homeTeamGamesPlayed : awayTeamGamesPlayed;
 
         var goalsToList = player.goals.split(",");
-        console.log(goalsToList);
         var assistsToList = player.assists.split(",");
 
         setCurrentGoals(parseInt(goalsToList[gameNumber]));

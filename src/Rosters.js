@@ -293,7 +293,7 @@ const Rosters = ({ signOut }) => {
     function adminPage()   {          
         return (
             <View className="Referee">
-                <Heading level={1} style={hStyle}>Select a team to view its roster:</Heading>
+                <Heading level={3} style={hStyle}>Select a team to view its roster:</Heading>
                 <Flex direction="row" justifyContent="center" >
                     <SelectField
                         id="allseasons"

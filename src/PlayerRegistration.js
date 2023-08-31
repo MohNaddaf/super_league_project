@@ -187,9 +187,7 @@ const PlayerRegistration = ({ signOut }) => {
         await API.graphql({
           query: createRegisteredPlayerMutation,
           variables: { input: data },
-        });        
-
-        event.target.reset();
+        });                
 
         setRegistrationDone(true);
       }
@@ -212,7 +210,7 @@ const PlayerRegistration = ({ signOut }) => {
     return (
       <div>
         <Flex direction="row" justifyContent="center" alignItems="left">
-          <Heading level={1} style={hStyle}>Fill the form Below to be added to your teams roster </Heading> 
+          <Heading level={3} style={hStyle}>Fill the form Below to be added to your teams roster </Heading> 
         </Flex>
         
         <View as="form" margin="3rem 0" onSubmit={createRegisteredPlayer} style={{width: Dimensions.get('window').width}}>      
