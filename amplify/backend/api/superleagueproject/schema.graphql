@@ -20,6 +20,8 @@ type Refs @model @auth(rules: [{allow: public}]) {
   id: ID!
   firstname: String
   lastname: String
+  phonenumber: String
+  email: String
 }
 
 type RegisteredPlayers @model @auth(rules: [{allow: public}]) {

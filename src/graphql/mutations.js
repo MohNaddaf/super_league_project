@@ -118,6 +118,8 @@ export const createRefs = /* GraphQL */ `
       id
       firstname
       lastname
+      phonenumber
+      email
       createdAt
       updatedAt
       __typename
@@ -133,6 +135,8 @@ export const updateRefs = /* GraphQL */ `
       id
       firstname
       lastname
+      phonenumber
+      email
       createdAt
       updatedAt
       __typename
@@ -148,6 +152,8 @@ export const deleteRefs = /* GraphQL */ `
       id
       firstname
       lastname
+      phonenumber
+      email
       createdAt
       updatedAt
       __typename

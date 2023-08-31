@@ -53,7 +53,7 @@ const Rosters = ({ signOut }) => {
     }, []);
    
     async function fetchSeasons() {
-        API.graphql(graphqlOperation(listSeasons)).then((response) => {
+        API.graphql(graphqlOperation(listSeasons, { filter: { year: { eq: new Date().getFullYear() }}})).then((response) => {
             const seasonsFromAPI = response.data.listSeasons.items;
             createSeasons(seasonsFromAPI);      
         });    
@@ -62,10 +62,10 @@ const Rosters = ({ signOut }) => {
     async function fetchDivisions(season) {
         var apiData = {};
         if (season=="" || season==undefined) {
-            apiData = await API.graphql(graphqlOperation(queries.listRegisteredTeams));
+            apiData = await API.graphql(graphqlOperation(queries.listRegisteredTeams, { filter: { year: { eq: new Date().getFullYear() }}}));
         }
         else{            
-            apiData = await API.graphql(graphqlOperation(queries.listRegisteredTeams, { filter: { season: { eq: season }}}));
+            apiData = await API.graphql(graphqlOperation(queries.listRegisteredTeams, { filter: { season: { eq: season }, year: { eq: new Date().getFullYear() }}}));
         }
         
         const teamsFromAPI = apiData.data.listRegisteredTeams.items;

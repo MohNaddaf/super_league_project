@@ -27,6 +27,8 @@ import Collapse from '@mui/material/Collapse';
 import InboxIcon from '@mui/icons-material/MoveToInbox';
 import ExpandMore from '@mui/icons-material/ExpandMore';
 import StarBorder from '@mui/icons-material/StarBorder';
+import Checkbox from '@mui/material/Checkbox';
+import ListItemButton from '@mui/material/ListItemButton';
 
 const CalculateStats = ({ signOut }) => {
     const [selectedSeason, setSelectedSeason] = useState("");
@@ -36,13 +38,22 @@ const CalculateStats = ({ signOut }) => {
     const [topPlayersForWeek, setTopPlayersForWeek] = useState([]);
     const [topPlayersForPositionForWeek, setTopPlayersForPositionForWeek] = useState({});
     const [allPositions, setAllPositions] = useState(["Center back / Defense", "Center Midfield", "Right Midfield", "Left Midfield", "Striker"]);
-    
+    const [checked, setChecked] = React.useState({});
+    const [allChecked, setAllChecked] = React.useState([]);
+
     const hStyle = { color: 'orange', 'font-size': `18px`};
     const textboxStyle = {
         backgroundColor: 'white',
         border: `1px solid`,
         width: Dimensions.get('window').width / 100 * 60,
         margin: '1rem 0'
+    };
+
+    const handleToggle = (value, position) => () => {        
+        var newObject = checked;
+        newObject[position] = value
+        setChecked(newObject);
+        setAllChecked(Object.values(newObject));    
     };
 
     useEffect(() => {
@@ -157,7 +168,7 @@ const CalculateStats = ({ signOut }) => {
 
             var assistsToList = player.assists.split(",");
             var contributionsToList = player.contributions.split(",");         
-            var person = {firstName: player.firstname, lastName:player.lastname, teamName:player.teamname, goals:parseInt(goalsToList[parseInt(selectedGameNumber)-1]), assists: parseInt(assistsToList[parseInt(selectedGameNumber)-1]), contributions: parseInt(contributionsToList[parseInt(selectedGameNumber)-1])};
+            var person = {id: player.id, firstName: player.firstname, lastName:player.lastname, teamName:player.teamname, goals:parseInt(goalsToList[parseInt(selectedGameNumber)-1]), assists: parseInt(assistsToList[parseInt(selectedGameNumber)-1]), contributions: parseInt(contributionsToList[parseInt(selectedGameNumber)-1])};
 
             if (!(player.position in topPlayers)){
                 topPlayers[player.position] = [person];            
@@ -325,10 +336,15 @@ const CalculateStats = ({ signOut }) => {
                                         {topPlayersForPositionForWeek[value]!=undefined && (topPlayersForPositionForWeek[value].map((player) => {
                                             return (
                                                 <ListItem sx={{ pl: 4 }}>
-                                                    <PersonIcon>
-                                                    <StarBorder />
-                                                    </PersonIcon>
+                                                    <ListItemButton role={undefined} onClick={handleToggle(player.id, value)} dense>
+                                                    <Checkbox
+                                                        edge="start"
+                                                        checked={allChecked.indexOf(player.id)!=-1}
+                                                        tabIndex={-1}
+                                                        disableRipple                                                        
+                                                        />                                                  
                                                     <ListItemText primary={`${player.firstName} ${player.lastName} with ${player.goals} goals and ${player.assists} assists`} secondary={`${player.teamName}`} />
+                                                    </ListItemButton>
                                                 </ListItem>
                                             );
                                             }))}
@@ -354,8 +370,12 @@ const CalculateStats = ({ signOut }) => {
                                 </ListItem>
                             );
                         })}
-                    </List>
+                    </List>                    
                 </Flex>
+
+                <Button onClick={computeStatistics} type="submit" variation="primary">
+                Calculate Statistics
+                </Button>
             </View>  
                                
         );

@@ -83,6 +83,8 @@ export const getRefs = /* GraphQL */ `
       id
       firstname
       lastname
+      phonenumber
+      email
       createdAt
       updatedAt
       __typename
@@ -100,6 +102,8 @@ export const listRefs = /* GraphQL */ `
         id
         firstname
         lastname
+        phonenumber
+        email
         createdAt
         updatedAt
         __typename
