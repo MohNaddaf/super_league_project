@@ -12,6 +12,7 @@ export const getMatches = /* GraphQL */ `
       season
       division
       year
+      referee
       createdAt
       updatedAt
       __typename
@@ -34,6 +35,7 @@ export const listMatches = /* GraphQL */ `
         season
         division
         year
+        referee
         createdAt
         updatedAt
         __typename

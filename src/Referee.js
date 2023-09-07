@@ -30,6 +30,7 @@ const [divisions, setDivisions] = useState([]);
 const [selectedSeason, setSelectedSeason] = useState("");
 const [selectedSeasonStartDate, setSelectedSeasonStartDate] = useState("");
 const [selectedDivision, setSelectedDivision] = useState("");
+const [currentRef, setCurrentRef] = useState("");
 const [selectedTeam, setSelectedTeam] = useState("");
 const [homeTeamPlayers, setHomeTeamPlayers] = useState([]);
 const [awayTeamPlayers, setAwayTeamPlayers] = useState([]);
@@ -103,7 +104,8 @@ const handleToggle = (value, homeoraway) => () => {
         else if(homeTeam==awayTeam){
             alert("Please choose two different teams!");      
         }
-        else{     
+        else{
+            setCurrentRef(ref);
             fetchPlayers();
             setIsReffing(true);              
         }    
@@ -672,7 +674,8 @@ const handleToggle = (value, homeoraway) => () => {
             awayteamscore: currentAwayTeamScore,
             season: selectedSeason,
             division: selectedDivision,
-            year: new Date().getFullYear()
+            year: new Date().getFullYear(),
+            referee: currentRef
         };
             
         await API.graphql({

@@ -15,6 +15,7 @@ export const createMatches = /* GraphQL */ `
       season
       division
       year
+      referee
       createdAt
       updatedAt
       __typename
@@ -35,6 +36,7 @@ export const updateMatches = /* GraphQL */ `
       season
       division
       year
+      referee
       createdAt
       updatedAt
       __typename
@@ -55,6 +57,7 @@ export const deleteMatches = /* GraphQL */ `
       season
       division
       year
+      referee
       createdAt
       updatedAt
       __typename
