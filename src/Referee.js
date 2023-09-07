@@ -577,93 +577,102 @@ const handleToggle = (value, homeoraway) => () => {
         setCurrentAssists(parseInt(assistsToList[gameNumber]));     
     }
 
-    function addGoal(event) {
-        if(Object.keys(currentPlayer).length==0){
-            return;
-        }
-        var gameNumber = selectedTeam == "Home" ? homeTeamGamesPlayed : awayTeamGamesPlayed;
-        var goalsToList = currentPlayer.goals.split(",");
-        var assistsToList = currentPlayer.assists.split(",");
-        var contributions = currentPlayer.contributions.split(",");
-        var id = currentPlayer.id;
-    
-        goalsToList[gameNumber] = parseInt(goalsToList[gameNumber]) + 1;
-        updatePlayerGoals(id, goalsToList.toString(), false);
-
-        contributions[gameNumber] = parseInt(goalsToList[gameNumber]) + parseInt(assistsToList[gameNumber]);
-        updatePlayerContributions(id, contributions.toString(), false);
-        if (selectedTeam == "Home") {
-            var newScore = currentHomeTeamScore+1;
-            setCurrentHomeTeamScore(newScore);
-        }
-        else{
-            var newScore = currentAwayTeamScore+1;
-            setCurrentAwayTeamScore(newScore);
-        }
-    }
-
-    function addAssist(event) {
-        if(Object.keys(currentPlayer).length==0){
-            return;
-        }
-        var gameNumber = selectedTeam == "Home" ? homeTeamGamesPlayed : awayTeamGamesPlayed;
-        var assistsToList = currentPlayer.assists.split(",");
-        var goalsToList = currentPlayer.goals.split(",");
-        var contributions = currentPlayer.contributions.split(",");
-        var id = currentPlayer.id;
-
-        assistsToList[gameNumber] = parseInt(assistsToList[gameNumber]) + 1;
-        updatePlayerAssists(id, assistsToList.toString(), false);
-
-        contributions[gameNumber] = parseInt(goalsToList[gameNumber]) + parseInt(assistsToList[gameNumber]);
-        updatePlayerContributions(id, contributions.toString(), false);
-    }
-
-    function removeGoal(event) {
-        if(Object.keys(currentPlayer).length==0){
-            return;
-        }    
-        var gameNumber = selectedTeam == "Home" ? homeTeamGamesPlayed : awayTeamGamesPlayed;
-        var goalsToList = currentPlayer.goals.split(",");
-        var assistsToList = currentPlayer.assists.split(",");
-        var contributions = currentPlayer.contributions.split(",");
-        var id = currentPlayer.id;
-
-        if (goalsToList[gameNumber]!=0) {
-            goalsToList[gameNumber] = parseInt(goalsToList[gameNumber]) - 1;
+    async function addGoal(event) {
+        setTimeout(async () => {
+            if(Object.keys(currentPlayer).length==0){
+                return;
+            }
+            var gameNumber = selectedTeam == "Home" ? homeTeamGamesPlayed : awayTeamGamesPlayed;
+            var goalsToList = currentPlayer.goals.split(",");
+            var assistsToList = currentPlayer.assists.split(",");
+            var contributions = currentPlayer.contributions.split(",");
+            var id = currentPlayer.id;
+        
+            goalsToList[gameNumber] = parseInt(goalsToList[gameNumber]) + 1;
             updatePlayerGoals(id, goalsToList.toString(), false);
 
             contributions[gameNumber] = parseInt(goalsToList[gameNumber]) + parseInt(assistsToList[gameNumber]);
             updatePlayerContributions(id, contributions.toString(), false);
-
+            
             if (selectedTeam == "Home") {
-                var newScore = currentHomeTeamScore-1;
+                var newScore = currentHomeTeamScore+1;
                 setCurrentHomeTeamScore(newScore);
             }
             else{
-                var newScore = currentAwayTeamScore-1;
+                var newScore = currentAwayTeamScore+1;
                 setCurrentAwayTeamScore(newScore);
             }
-        }
+        }, 1000);
     }
 
-    function removeAssist(event) {
-        if(Object.keys(currentPlayer).length==0){
-            return;
-        }
-        var gameNumber = selectedTeam == "Home" ? homeTeamGamesPlayed : awayTeamGamesPlayed;
-        var assistsToList = currentPlayer.assists.split(",");
-        var goalsToList = currentPlayer.goals.split(",");
-        var contributions = currentPlayer.contributions.split(",");
-        var id = currentPlayer.id;
+    function addAssist(event) {
+        setTimeout(() => {
+            if(Object.keys(currentPlayer).length==0){
+                return;
+            }
+            var gameNumber = selectedTeam == "Home" ? homeTeamGamesPlayed : awayTeamGamesPlayed;
+            var assistsToList = currentPlayer.assists.split(",");
+            var goalsToList = currentPlayer.goals.split(",");
+            var contributions = currentPlayer.contributions.split(",");
+            var id = currentPlayer.id;
 
-        if (assistsToList[gameNumber]!=0) {
-            assistsToList[gameNumber] = parseInt(assistsToList[gameNumber]) - 1;
+            assistsToList[gameNumber] = parseInt(assistsToList[gameNumber]) + 1;
             updatePlayerAssists(id, assistsToList.toString(), false);
 
             contributions[gameNumber] = parseInt(goalsToList[gameNumber]) + parseInt(assistsToList[gameNumber]);
             updatePlayerContributions(id, contributions.toString(), false);
-        }
+        }, 1000);
+    }
+
+    function removeGoal(event) {
+        setTimeout(() => {
+            if(Object.keys(currentPlayer).length==0){
+                return;
+            }    
+            var gameNumber = selectedTeam == "Home" ? homeTeamGamesPlayed : awayTeamGamesPlayed;
+            var goalsToList = currentPlayer.goals.split(",");
+            var assistsToList = currentPlayer.assists.split(",");
+            var contributions = currentPlayer.contributions.split(",");
+            var id = currentPlayer.id;
+
+            if (goalsToList[gameNumber]!=0) {
+                goalsToList[gameNumber] = parseInt(goalsToList[gameNumber]) - 1;
+                updatePlayerGoals(id, goalsToList.toString(), false);
+
+                contributions[gameNumber] = parseInt(goalsToList[gameNumber]) + parseInt(assistsToList[gameNumber]);
+                updatePlayerContributions(id, contributions.toString(), false);
+
+                if (selectedTeam == "Home") {
+                    var newScore = currentHomeTeamScore-1;
+                    setCurrentHomeTeamScore(newScore);
+                }
+                else{
+                    var newScore = currentAwayTeamScore-1;
+                    setCurrentAwayTeamScore(newScore);
+                }
+            }
+        }, 1000);
+    }
+
+    function removeAssist(event) {
+        setTimeout(() => {
+            if(Object.keys(currentPlayer).length==0){
+                return;
+            }
+            var gameNumber = selectedTeam == "Home" ? homeTeamGamesPlayed : awayTeamGamesPlayed;
+            var assistsToList = currentPlayer.assists.split(",");
+            var goalsToList = currentPlayer.goals.split(",");
+            var contributions = currentPlayer.contributions.split(",");
+            var id = currentPlayer.id;
+
+            if (assistsToList[gameNumber]!=0) {
+                assistsToList[gameNumber] = parseInt(assistsToList[gameNumber]) - 1;
+                updatePlayerAssists(id, assistsToList.toString(), false);
+
+                contributions[gameNumber] = parseInt(goalsToList[gameNumber]) + parseInt(assistsToList[gameNumber]);
+                updatePlayerContributions(id, contributions.toString(), false);
+            }
+        }, 1000);
     }
 
     async function EndMatch(event) {
