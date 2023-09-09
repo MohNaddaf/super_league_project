@@ -146,8 +146,17 @@ const Admin = ({ signOut }) => {
     }));
 
     async function fetchPlayers() {
-        API.graphql(graphqlOperation(queries.listRegisteredPlayers)).then((response) => {
+        API.graphql(graphqlOperation(queries.listRegisteredPlayers)).then(async (response) => {
             const playersFromAPI = response.data.listRegisteredPlayers.items;
+
+            var token = response.data.listRegisteredPlayers.nextToken;
+            
+            while (token!=null) {
+                var results = await API.graphql(graphqlOperation(queries.listRegisteredPlayers, {nextToken:token}));
+                playersFromAPI.push.apply(playersFromAPI, results.data.listRegisteredPlayers.items);
+                token = results.data.listRegisteredPlayers.nextToken;
+            }
+
             createPlayersTable(playersFromAPI);
         });  
     }

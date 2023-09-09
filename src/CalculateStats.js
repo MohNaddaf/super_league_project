@@ -241,8 +241,17 @@ const CalculateStats = ({ signOut }) => {
     }
 
     async function fetchPlayers() {            
-        API.graphql(graphqlOperation(queries.listRegisteredPlayers, { filter: {season: { eq: selectedSeason }, division: { eq: selectedDivision }}})).then((response) => {
+        API.graphql(graphqlOperation(queries.listRegisteredPlayers, { filter: {season: { eq: selectedSeason }, division: { eq: selectedDivision }}})).then(async (response) => {
             const playersFromAPI = response.data.listRegisteredPlayers.items;
+
+            var token = response.data.listRegisteredPlayers.nextToken;
+            
+            while (token!=null) {
+                var results = await API.graphql(graphqlOperation(queries.listRegisteredPlayers, {nextToken:token, filter: {season: { eq: selectedSeason }, division: { eq: selectedDivision }}}));                
+                playersFromAPI.push.apply(playersFromAPI, results.data.listRegisteredPlayers.items);
+                token = results.data.listRegisteredPlayers.nextToken;
+            }
+
             calculateTopPlayersForWeek(playersFromAPI);
             calculateTopGoalScorers(playersFromAPI);
             calculateTopPlayersForEachPositionForWeek(playersFromAPI);

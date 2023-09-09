@@ -147,9 +147,17 @@ const Rosters = ({ signOut }) => {
             return;    
         }
         
-        API.graphql(graphqlOperation(queries.listRegisteredPlayers, { filter: {teamid: { eq: selectedTeam }, onRoster: { eq: true }}})).then((response) => {
+        API.graphql(graphqlOperation(queries.listRegisteredPlayers, { filter: {teamid: { eq: selectedTeam }, onRoster: { eq: true }}})).then(async (response) => {        
             const playersFromAPI = response.data.listRegisteredPlayers.items;
-            API.graphql(graphqlOperation(queries.listRegisteredTeams, { filter: {id: { eq: selectedTeam }}})).then((response) => {            
+            var token = response.data.listRegisteredPlayers.nextToken;
+            
+            while (token!=null) {
+                var results = await API.graphql(graphqlOperation(queries.listRegisteredPlayers, {nextToken:token, filter: {teamid: { eq: selectedTeam }, onRoster: { eq: true }}}));
+                playersFromAPI.push.apply(playersFromAPI, results.data.listRegisteredPlayers.items);
+                token = results.data.listRegisteredPlayers.nextToken;
+            }            
+            
+            API.graphql(graphqlOperation(queries.listRegisteredTeams, { filter: {id: { eq: selectedTeam }}})).then((response) => {        
                 setSelectedTeamName(response.data.listRegisteredTeams.items[0].teamname);                
                 const gamesPlayed = response.data.listRegisteredTeams.items[0].gamesplayed;
                 setCurrentTeamNumGames(gamesPlayed);

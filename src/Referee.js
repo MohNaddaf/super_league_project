@@ -193,14 +193,31 @@ const handleToggle = (value, homeoraway) => () => {
     }
 
     async function fetchPlayers() {            
-        API.graphql(graphqlOperation(queries.listRegisteredPlayers, { filter: { teamid: { eq: homeTeamID }, onRoster: { eq: true }}})).then((response) => {
-            const homeTeamPlayersFromAPI = response.data.listRegisteredPlayers.items;            
+        API.graphql(graphqlOperation(queries.listRegisteredPlayers, { filter: { teamid: { eq: homeTeamID }, onRoster: { eq: true }}})).then(async (response) => {
+            const homeTeamPlayersFromAPI = response.data.listRegisteredPlayers.items;
+            var token = response.data.listRegisteredPlayers.nextToken;
+
+            while (token!=null) {
+                var results = await API.graphql(graphqlOperation(queries.listRegisteredPlayers, {nextToken:token, filter: {teamid: { eq: homeTeamID }, onRoster: { eq: true }}}));
+                homeTeamPlayersFromAPI.push.apply(homeTeamPlayersFromAPI, results.data.listRegisteredPlayers.items);
+                token = results.data.listRegisteredPlayers.nextToken;
+            }  
+            
             setHomePlayers(homeTeamPlayersFromAPI);
             setPlayerStatsGameStart(homeTeamPlayersFromAPI, homeTeamGamesPlayed, true); 
         });  
 
-        API.graphql(graphqlOperation(queries.listRegisteredPlayers, { filter: { teamid: { eq: awayTeamID }, onRoster: { eq: true }}})).then((response) => {
+        API.graphql(graphqlOperation(queries.listRegisteredPlayers, { filter: { teamid: { eq: awayTeamID }, onRoster: { eq: true }}})).then(async (response) => {
             const awayTeamPlayersFromAPI = response.data.listRegisteredPlayers.items;
+
+            var token = response.data.listRegisteredPlayers.nextToken;
+
+            while (token!=null) {
+                var results = await API.graphql(graphqlOperation(queries.listRegisteredPlayers, {nextToken:token, filter: {teamid: { eq: awayTeamID }, onRoster: { eq: true }}}));
+                awayTeamPlayersFromAPI.push.apply(awayTeamPlayersFromAPI, results.data.listRegisteredPlayers.items);
+                token = results.data.listRegisteredPlayers.nextToken;
+            }
+
             setAwayPlayers(awayTeamPlayersFromAPI);
             setPlayerStatsGameStart(awayTeamPlayersFromAPI, awayTeamGamesPlayed, false);         
         });        
