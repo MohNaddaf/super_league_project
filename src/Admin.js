@@ -30,10 +30,11 @@ import {
 
 const Admin = ({ signOut }) => {
     const [value, setValue] = React.useState(0);
-    const [rows, setRows] = React.useState([]);
+    const [playerRows, setPlayerRows] = React.useState([]);
+    const [matchRows, setMatchRows] = React.useState([]);
     const [selectedSeason, setSelectedSeason] = useState("");
   
-    const columns = [
+    const playerColumns = [
         { field: "id", hide: true },
         { field: "fname", headerName: "First Name", width: 150 },
         { field: "lname", headerName: "Last Name", width: 150 },
@@ -43,6 +44,18 @@ const Admin = ({ signOut }) => {
         { field: "year", headerName: "Year", width: 150 },
         { field: "onroster", headerName: "Is On Roster", width: 150 }
     ];
+
+    const matchColumns = [      
+      { field: "id", hide: true },
+      { field: "season", headerName: "Season", width: 150 },
+      { field: "division", headerName: "Division", width: 150 },
+      { field: "year", headerName: "Year", width: 150 },
+      { field: "hometeam", headerName: "Home Team", width: 150 },
+      { field: "awayteam", headerName: "Away Team", width: 150 },
+      { field: "hometeamscore", headerName: "Home Team Score", width: 150 },
+      { field: "awayteamscore", headerName: "Away Team Score", width: 150 },
+      { field: "referee", headerName: "Referee", width: 150 }
+  ];
 
     const textboxStyle = {
       backgroundColor: 'white',
@@ -54,7 +67,8 @@ const Admin = ({ signOut }) => {
     var selectedPlayers = [];
 
     useEffect(() => {
-        fetchPlayers();        
+        fetchPlayers();
+        fetchMatches();    
     }, []);
 
     function customCheckbox(theme) {
@@ -145,6 +159,12 @@ const Admin = ({ signOut }) => {
     ...customCheckbox(theme),
     }));
 
+    async function getReferee(refID) {
+      var response = await API.graphql(graphqlOperation(queries.listRefs, { filter: {id: { eq: refID }}}));
+      const refName = response.data.listRefs.items[0].firstname + " " + response.data.listRefs.items[0].lastname;      
+      return refName;      
+    }
+    
     async function fetchPlayers() {
         API.graphql(graphqlOperation(queries.listRegisteredPlayers)).then(async (response) => {
             const playersFromAPI = response.data.listRegisteredPlayers.items;
@@ -161,6 +181,21 @@ const Admin = ({ signOut }) => {
         });  
     }
 
+    async function fetchMatches() {
+      API.graphql(graphqlOperation(queries.listMatches)).then(async (response) => {
+          const matchesFromAPI = response.data.listMatches.items;
+
+          var token = response.data.listMatches.nextToken;
+          
+          while (token!=null) {
+              var results = await API.graphql(graphqlOperation(queries.listMatches, {nextToken:token}));
+              matchesFromAPI.push.apply(matchesFromAPI, results.data.listMatches.items);
+              token = results.data.listMatches.nextToken;
+          }
+
+          createMatchHistoryTable(matchesFromAPI);
+      });  
+  }
 
     function createPlayersTable(players) {
         var allRows = [];
@@ -181,8 +216,32 @@ const Admin = ({ signOut }) => {
             allRows.push(row);            
         }
 
-        setRows(allRows);              
+        setPlayerRows(allRows);              
     }            
+
+    async function createMatchHistoryTable(matches) {
+      var allRows = [];
+
+      for (var i=0; i<matches.length;i++){
+          var match = matches[i];
+          var ref = await getReferee(match.referee);          
+          var row = {
+              id: match.id,             
+              season: match.season,
+              division: match.division,
+              year: match.year,
+              hometeam: match.hometeam,
+              awayteam: match.awayteam,
+              hometeamscore: match.hometeamscore,
+              awayteamscore: match.awayteamscore,
+              referee: ref
+          }
+
+          allRows.push(row);            
+      }
+
+      setMatchRows(allRows);              
+  }
 
     const handleChange = (event, newValue) => {
         // event.type can be equal to focus with selectionFollowsFocus.
@@ -272,7 +331,7 @@ const Admin = ({ signOut }) => {
     function removePlayersView() {
       return (
         <div style={{ height: Dimensions.get('window').height / 100 * 60, width: "100%" }}>
-            <StyledDataGrid onRowSelectionModelChange={handleRowSelection} checkboxSelection disableColumnFilter disableColumnMenu disableDensitySelector disableColumnSelector rows={rows} columns={columns} slots={{ toolbar: GridToolbar }}
+            <StyledDataGrid onRowSelectionModelChange={handleRowSelection} checkboxSelection disableColumnFilter disableColumnMenu disableDensitySelector disableColumnSelector rows={playerRows} columns={playerColumns} slots={{ toolbar: GridToolbar }}
                 slotProps={{                    
                     toolbar: {                        
                         showQuickFilter: true,
@@ -412,6 +471,23 @@ const Admin = ({ signOut }) => {
       );
     }
 
+    function matchHistoryView() {
+      return (
+        <div style={{ height: Dimensions.get('window').height / 100 * 60, width: "100%" }}>
+            <StyledDataGrid onRowSelectionModelChange={handleRowSelection} disableColumnFilter disableColumnMenu disableDensitySelector disableColumnSelector rows={matchRows} columns={matchColumns} slots={{ toolbar: GridToolbar }}
+                slotProps={{                    
+                    toolbar: {                        
+                        showQuickFilter: true,
+                        printOptions: { disableToolbarButton: true },
+                        csvOptions: { disableToolbarButton: true },
+                        quickFilterProps: { debounceMs: 250 },
+                    },
+                }}
+            />            
+          </div>
+      );
+    }
+
     async function addRef(event) {
       event.preventDefault();
 
@@ -472,10 +548,11 @@ const Admin = ({ signOut }) => {
                         <LinkTab label="Remove Players"/>
                         <LinkTab label="Add Referees"/>
                         <LinkTab label="Add Team"/>
+                        <LinkTab label="Match History"/>
                     </Tabs>
                 </Box>
                 
-                {value == 0 ? <CalculateStats/> : value == 1 ? removePlayersView() : value == 2 ? manageRefView() : addTeamView()}              
+                {value == 0 ? <CalculateStats/> : value == 1 ? removePlayersView() : value == 2 ? manageRefView() : value == 3 ? addTeamView() : matchHistoryView()}              
             </div>
         );
     }
