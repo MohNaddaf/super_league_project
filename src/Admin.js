@@ -296,6 +296,27 @@ const Admin = ({ signOut }) => {
         }
     }
 
+    function addPlayers() {
+      console.log(selectedPlayers);
+      for (var i=0; i<selectedPlayers.length;i++) {
+          addPlayerToRoster(selectedPlayers[i]);
+      }
+    }
+
+    async function addPlayerToRoster(playerid) {
+      const informationToUpdate = {
+          id: playerid,
+          onRoster: true
+      };
+
+      const playerReturned = await API.graphql({ 
+          query: mutations.updateRegisteredPlayers, 
+          variables: { input: informationToUpdate }
+      });
+
+      fetchPlayers(); 
+  }
+
     async function removePlayerFromRoster(playerid) {
         const informationToUpdate = {
             id: playerid,
@@ -342,6 +363,7 @@ const Admin = ({ signOut }) => {
                 }}
             />
             <Button variation="primary" onClick={removePlayers} style={{ margin: 10, backgroundColor: 'red'}}>Remove Players From Roster</Button>
+            <Button variation="primary" onClick={addPlayers} style={{ margin: 10, backgroundColor: 'blue'}}>Add Players to Rosters</Button>
           </div>
       );
     }    
