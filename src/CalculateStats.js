@@ -121,6 +121,10 @@ const CalculateStats = ({ signOut }) => {
         for (var i=0;i<players.length;i++){
             var player=players[i];
 
+            if (player.firstname=="Unassigned" || player.firstname=="Unassigned " || player.firstname=="unassigned"){
+                continue;
+            }
+
             if (player.goals=="" || player.goals==undefined) {
                 continue;
             }
@@ -156,6 +160,10 @@ const CalculateStats = ({ signOut }) => {
 
         for (var i=0;i<players.length;i++){
             var player=players[i];
+
+            if (player.firstname=="Unassigned" || player.firstname=="Unassigned " || player.firstname=="unassigned"){
+                continue;
+            }
 
             if (player.goals=="" || player.goals==undefined) {
                 continue;
@@ -202,6 +210,10 @@ const CalculateStats = ({ signOut }) => {
         for (var i=0;i<players.length;i++){
             var player=players[i];
             var totalGoals=0;
+
+            if (player.firstname=="Unassigned" || player.firstname=="Unassigned " || player.firstname=="unassigned"){
+                continue;
+            }
 
             if (player.goals=="" || player.goals==undefined) {
                 continue;
