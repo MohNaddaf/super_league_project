@@ -54,7 +54,8 @@ const Admin = ({ signOut }) => {
       { field: "awayteam", headerName: "Away Team", width: 150 },
       { field: "hometeamscore", headerName: "Home Team Score", width: 150 },
       { field: "awayteamscore", headerName: "Away Team Score", width: 150 },
-      { field: "referee", headerName: "Referee", width: 150 }
+      { field: "referee", headerName: "Referee", width: 150 },
+      { field: "updatedAt", headerName: "Game Date", width: 150 }
   ];
 
     const textboxStyle = {
@@ -224,7 +225,8 @@ const Admin = ({ signOut }) => {
 
       for (var i=0; i<matches.length;i++){
           var match = matches[i];
-          var ref = await getReferee(match.referee);          
+          var ref = await getReferee(match.referee);                
+   
           var row = {
               id: match.id,             
               season: match.season,
@@ -234,7 +236,9 @@ const Admin = ({ signOut }) => {
               awayteam: match.awayteam,
               hometeamscore: match.hometeamscore,
               awayteamscore: match.awayteamscore,
-              referee: ref
+              referee: ref,
+              updatedAt: match.updatedAt.split("T")[0]
+
           }
 
           allRows.push(row);            
