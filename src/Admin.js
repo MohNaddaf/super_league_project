@@ -300,6 +300,12 @@ const Admin = ({ signOut }) => {
         }
     }
 
+    function deleteMatch() {
+      for (var i=0; i<selectedPlayers.length;i++) {
+        removeMatch(selectedPlayers[i]);
+      }    
+    }
+
     function addPlayers() {
       console.log(selectedPlayers);
       for (var i=0; i<selectedPlayers.length;i++) {
@@ -334,6 +340,21 @@ const Admin = ({ signOut }) => {
 
         fetchPlayers(); 
     }
+
+    async function removeMatch(matchID) {
+      const idToRemove = {
+          id: matchID
+      };
+
+      console.log(idToRemove);
+      
+      await API.graphql({ 
+          query: mutations.deleteMatches, 
+          variables: { input: idToRemove }
+      });
+
+      fetchMatches();
+  }
 
     async function fetchSeasons() {
       API.graphql(graphqlOperation(listSeasons, { filter: { year: { eq: new Date().getFullYear() }}})).then((response) => {
@@ -500,7 +521,7 @@ const Admin = ({ signOut }) => {
     function matchHistoryView() {
       return (
         <div style={{ height: Dimensions.get('window').height / 100 * 60, width: "100%" }}>
-            <StyledDataGrid onRowSelectionModelChange={handleRowSelection} disableColumnFilter disableColumnMenu disableDensitySelector disableColumnSelector rows={matchRows} columns={matchColumns} slots={{ toolbar: GridToolbar }}
+            <StyledDataGrid onRowSelectionModelChange={handleRowSelection} checkboxSelection disableColumnFilter disableColumnMenu disableDensitySelector disableColumnSelector rows={matchRows} columns={matchColumns} slots={{ toolbar: GridToolbar }}
                 slotProps={{                    
                     toolbar: {                        
                         showQuickFilter: true,
@@ -509,7 +530,9 @@ const Admin = ({ signOut }) => {
                         quickFilterProps: { debounceMs: 250 },
                     },
                 }}
-            />            
+            />  
+            <Button variation="primary" onClick={deleteMatch} style={{ margin: 10, backgroundColor: 'red'}}>Delete Match</Button>
+
           </div>
       );
     }
