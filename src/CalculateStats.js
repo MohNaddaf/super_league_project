@@ -34,6 +34,7 @@ const CalculateStats = ({ signOut }) => {
     const [selectedSeason, setSelectedSeason] = useState("");
     const [selectedDivision, setSelectedDivision] = useState("");
     const [selectedGameNumber, setSelectedGameNumber] = useState("");
+    const [selectedNumPlayers, setSelectedNumPlayers] = useState("");
     const [topGoalScorers, setTopGoalScorers] = useState([]);
     const [topPlayersForWeek, setTopPlayersForWeek] = useState([]);
     const [topPlayersForPositionForWeek, setTopPlayersForPositionForWeek] = useState({});
@@ -152,7 +153,7 @@ const CalculateStats = ({ signOut }) => {
         });
 
         //select MAX top 5 players
-        setTopPlayersForWeek(topPlayers.slice(0, 5));        
+        setTopPlayersForWeek(topPlayers.slice(0, selectedNumPlayers));        
     }
   
     function calculateTopPlayersForEachPositionForWeek(players) {
@@ -198,7 +199,7 @@ const CalculateStats = ({ signOut }) => {
         }
         
         for (const key in topPlayers) {
-            topPlayers[key] = topPlayers[key].slice(0, 5);
+            topPlayers[key] = topPlayers[key].slice(0, selectedNumPlayers);
         }
 
         setTopPlayersForPositionForWeek(topPlayers);    
@@ -249,7 +250,7 @@ const CalculateStats = ({ signOut }) => {
         });
 
         //select MAX top 5 players
-        setTopGoalScorers(topScorers.slice(0, 5));              
+        setTopGoalScorers(topScorers.slice(0, selectedNumPlayers));              
     }
 
     async function fetchPlayers() {            
@@ -319,7 +320,20 @@ const CalculateStats = ({ signOut }) => {
                         inputStyles={textboxStyle}
                         onChange={(e) => setSelectedGameNumber(e.target.value)}
                     />
-                </Flex>                                                       
+                </Flex>
+
+                <Flex direction="row" justifyContent="center" >
+                    <TextField
+                        name="numplayers"
+                        placeholder="Number of Players to Show (required)"
+                        label="Num Players"
+                        labelHidden
+                        variation="quiet"
+                        required
+                        inputStyles={textboxStyle}
+                        onChange={(e) => setSelectedNumPlayers(e.target.value)}
+                    />
+                </Flex>                                                  
     
                 <Button onClick={computeStatistics} type="submit" variation="primary">
                 Calculate Statistics
