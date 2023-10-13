@@ -82,7 +82,7 @@ const awayteamstyle = {
 const handleToggle = (value, homeoraway) => () => {     
     setPlayerID(value.id);        
     setSelectedTeam(homeoraway);
-    fetchCurrentPlayer(value.id);
+    fetchCurrentPlayer(value.id, homeoraway);
 };
 
     useEffect(() => {
@@ -184,11 +184,11 @@ const handleToggle = (value, homeoraway) => () => {
         fetchTeams(selectedDivision, season);        
     }
 
-    async function fetchCurrentPlayer(playerid) { 
+    async function fetchCurrentPlayer(playerid, homeoraway) { 
         API.graphql(graphqlOperation(queries.getRegisteredPlayers, { id: playerid})).then((response) => {
             const playerFromAPI = response.data.getRegisteredPlayers;
             setCurrentPlayer(playerFromAPI);
-            setPlayerStats(playerFromAPI);
+            setPlayerStats(playerFromAPI, homeoraway);
         });
     }
 
@@ -548,7 +548,7 @@ const handleToggle = (value, homeoraway) => () => {
         });
 
         if (freshStart == false) {
-            fetchCurrentPlayer(playerid);
+            fetchCurrentPlayer(playerid, selectedTeam);
         }        
     }
 
@@ -564,7 +564,7 @@ const handleToggle = (value, homeoraway) => () => {
         });
 
         if (freshStart == false) {
-            fetchCurrentPlayer(playerid);
+            fetchCurrentPlayer(playerid, selectedTeam);
         } 
     }
 
@@ -580,12 +580,12 @@ const handleToggle = (value, homeoraway) => () => {
         });
 
         if (freshStart == false) {
-            fetchCurrentPlayer(playerid);
+            fetchCurrentPlayer(playerid, selectedTeam);
         }
     }    
 
-    function setPlayerStats(player) { 
-        var gameNumber = selectedTeam == "Home" ? homeTeamGamesPlayed : awayTeamGamesPlayed;
+    function setPlayerStats(player, homeoraway) { 
+        var gameNumber = homeoraway == "Home" ? homeTeamGamesPlayed : awayTeamGamesPlayed;
 
         var goalsToList = player.goals.split(",");
         var assistsToList = player.assists.split(",");
