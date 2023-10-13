@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useReducer } from "react";
 import "./Referee.css";
 import "@aws-amplify/ui-react/styles.css";
 import { API, graphqlOperation} from "aws-amplify";
@@ -8,7 +8,8 @@ import {
   Heading,
   View,
   SelectField,
-  TextField
+  TextField,
+  Text
 } from "@aws-amplify/ui-react";
 
 import * as queries from "./graphql/queries";
@@ -39,10 +40,17 @@ const CalculateStats = ({ signOut }) => {
     const [topPlayersForWeek, setTopPlayersForWeek] = useState([]);
     const [topPlayersForPositionForWeek, setTopPlayersForPositionForWeek] = useState({});
     const [allPositions, setAllPositions] = useState(["Center back / Defense", "Center Midfield", "Right Midfield", "Left Midfield", "Striker"]);
-    const [checked, setChecked] = React.useState({});
     const [allChecked, setAllChecked] = React.useState([]);
+    const [allTopPlayersOfWeek, setAllTopPlayersOfWeek] = React.useState([]);
+    const [allTopGoalScorers, setAllTopGoalScorers] = React.useState([]);
+    const [allCheckedPlayers, setAllCheckedPlayers] = React.useState([]);
+    const [allTopPlayersOfWeekPlayers, setAllTopPlayersOfWeekPlayers] = React.useState([]);
+    const [allTopGoalScorersPlayers, setAllTopGoalScorersPlayers] = React.useState([]);
+    const [, forceUpdate] = useReducer(x => x + 1, 0);
+    const [generateReportClicked, setGenerateReportClicked] = useState(false);
+    const [playersByPosition, setPlayersByPosition] = useState({});
 
-    const hStyle = { color: 'orange', 'font-size': `18px`};
+    const hStyle = { color: 'orange'};
     const textboxStyle = {
         backgroundColor: 'white',
         border: `1px solid`,
@@ -50,11 +58,65 @@ const CalculateStats = ({ signOut }) => {
         margin: '1rem 0'
     };
 
-    const handleToggle = (value, position) => () => {        
-        var newObject = checked;
-        newObject[position] = value
-        setChecked(newObject);
-        setAllChecked(Object.values(newObject));    
+    const divStyle = {marginRight: '1rem', marginLeft: '1rem', alignItems:'left', textAlign:'left'}
+
+    const handleTopPlayersOfWeek = (value, player) => () => {        
+        var newObject = allTopPlayersOfWeek;
+        var newObject1 = allTopPlayersOfWeekPlayers;
+
+        if (newObject.includes(value)) {
+            var index = newObject.indexOf(value);
+            newObject.splice(index,1);
+
+            var index1 = newObject1.indexOf(player);
+            newObject1.splice(index1,1);
+        }
+        else{
+            newObject.push(value);
+            newObject1.push(player);
+        }
+        setAllTopPlayersOfWeek(newObject);
+        setAllTopPlayersOfWeekPlayers(newObject1);
+        forceUpdate();
+    };
+
+    const handleTopGoalScorerSelected = (value, player) => () => {        
+        var newObject = allTopGoalScorers;
+        var newObject1 = allTopGoalScorersPlayers;
+        if (newObject.includes(value)) {
+            var index = newObject.indexOf(value);
+            newObject.splice(index,1);
+
+            var index1 = newObject1.indexOf(player);
+            newObject1.splice(index1,1);
+        }
+        else{
+            newObject.push(value);
+            newObject1.push(player);
+        }
+        setAllTopGoalScorers(newObject);
+        setAllTopGoalScorersPlayers(newObject1);
+        forceUpdate();
+    };
+
+    const handleToggle = (value, player) => () => {        
+        var newObject = allChecked;
+        var newObject1 = allCheckedPlayers;
+
+        if (newObject.includes(value)) {
+            var index = newObject.indexOf(value);
+            newObject.splice(index,1);
+
+            var index1 = newObject1.indexOf(player);
+            newObject1.splice(index1,1);
+        }
+        else{
+            newObject.push(value);
+            newObject1.push(player);
+        }
+        setAllChecked(newObject);
+        setAllCheckedPlayers(newObject1);
+        forceUpdate();
     };
 
     useEffect(() => {
@@ -116,6 +178,28 @@ const CalculateStats = ({ signOut }) => {
         fetchPlayers();
     }
 
+    function generateReport() {
+        var playersByPositionNew = {};
+
+
+        for (var i=0; i<allCheckedPlayers.length; i++){
+            var player = allCheckedPlayers[i];
+
+            if (player.position in playersByPositionNew) {
+                var tempArray = playersByPositionNew[player.position];
+                tempArray.push(player);
+                playersByPositionNew[player.position] = tempArray;
+            }
+            else {
+                playersByPositionNew[player.position] = [player];
+            }
+        }
+       
+        setPlayersByPosition(playersByPositionNew);
+
+        setGenerateReportClicked(true);
+    }
+
     function calculateTopPlayersForWeek(players) {
         var topPlayers = [];                
 
@@ -138,7 +222,7 @@ const CalculateStats = ({ signOut }) => {
             var assistsToList = player.assists.split(",");
             var contributionsToList = player.contributions.split(",");
             
-            var person = {firstName: player.firstname, lastName:player.lastname, teamName:player.teamname, goals:parseInt(goalsToList[parseInt(selectedGameNumber)-1]), assists: parseInt(assistsToList[parseInt(selectedGameNumber)-1]), contributions: parseInt(contributionsToList[parseInt(selectedGameNumber)-1])};
+            var person = {id: player.id, position: player.position, firstName: player.firstname, lastName:player.lastname, teamName:player.teamname, goals:parseInt(goalsToList[parseInt(selectedGameNumber)-1]), assists: parseInt(assistsToList[parseInt(selectedGameNumber)-1]), contributions: parseInt(contributionsToList[parseInt(selectedGameNumber)-1])};
             topPlayers.push(person);
         }                        
 
@@ -177,7 +261,7 @@ const CalculateStats = ({ signOut }) => {
 
             var assistsToList = player.assists.split(",");
             var contributionsToList = player.contributions.split(",");         
-            var person = {id: player.id, firstName: player.firstname, lastName:player.lastname, teamName:player.teamname, goals:parseInt(goalsToList[parseInt(selectedGameNumber)-1]), assists: parseInt(assistsToList[parseInt(selectedGameNumber)-1]), contributions: parseInt(contributionsToList[parseInt(selectedGameNumber)-1])};
+            var person = {id: player.id, position: player.position, firstName: player.firstname, lastName:player.lastname, teamName:player.teamname, goals:parseInt(goalsToList[parseInt(selectedGameNumber)-1]), assists: parseInt(assistsToList[parseInt(selectedGameNumber)-1]), contributions: parseInt(contributionsToList[parseInt(selectedGameNumber)-1])};
 
             if (!(player.position in topPlayers)){
                 topPlayers[player.position] = [person];            
@@ -236,7 +320,7 @@ const CalculateStats = ({ signOut }) => {
                 }
             }
                         
-            var person = {firstName: player.firstname, lastName:player.lastname, teamName:player.teamname, goals:totalGoals};
+            var person = {id: player.id, position: player.position, firstName: player.firstname, lastName:player.lastname, teamName:player.teamname, goals:totalGoals};
             topScorers.push(person);
         }
                 
@@ -271,7 +355,7 @@ const CalculateStats = ({ signOut }) => {
         });          
     }
 
-    function calcStats()   {          
+    function calcStats() {          
         return (
             <View className="Referee">
                 <Flex direction="row" justifyContent="center" >
@@ -339,17 +423,25 @@ const CalculateStats = ({ signOut }) => {
                 Calculate Statistics
                 </Button>
                 
-                <Flex direction="row" justifyContent="left" margin={"10rem"} inputStyles={textboxStyle}>             
+                <Flex direction="row" justifyContent="center" margin={"3rem"} inputStyles={textboxStyle}>             
                     <List sx={{ width: '100%', maxWidth: Dimensions.get('window').width/4, bgcolor: 'background.paper' }} subheader={<ListSubheader style={hStyle} component="div" id="top-5-players-for-week-subheader">Most Contributions For Week {selectedGameNumber}</ListSubheader>}>
                         {topPlayersForWeek.map((value) => {
                             return (
                                 <ListItem>
-                                    <ListItemAvatar>
-                                    <Avatar>
-                                        <PersonIcon />
-                                    </Avatar>
-                                    </ListItemAvatar>
-                                    <ListItemText primary={`${value.firstName} ${value.lastName} with ${value.goals} goals and ${value.assists} assists`} secondary={`${value.teamName}`} />
+                                    <ListItemButton role={undefined} onClick={handleTopPlayersOfWeek(value.id, value)} dense>
+                                        <Checkbox
+                                            edge="start"
+                                            checked={allTopPlayersOfWeek.indexOf(value.id)!=-1}
+                                            tabIndex={-1}
+                                            disableRipple                                                        
+                                        />
+                                        <ListItemAvatar>
+                                        <Avatar>
+                                            <PersonIcon />
+                                        </Avatar>
+                                        </ListItemAvatar>
+                                        <ListItemText primary={`${value.firstName} ${value.lastName} with ${value.goals} goals and ${value.assists} assists`} secondary={`${value.teamName}`} />
+                                    </ListItemButton>
                                 </ListItem>
                             );
                         })}
@@ -371,14 +463,14 @@ const CalculateStats = ({ signOut }) => {
                                         {topPlayersForPositionForWeek[value]!=undefined && (topPlayersForPositionForWeek[value].map((player) => {
                                             return (
                                                 <ListItem sx={{ pl: 4 }}>
-                                                    <ListItemButton role={undefined} onClick={handleToggle(player.id, value)} dense>
-                                                    <Checkbox
-                                                        edge="start"
-                                                        checked={allChecked.indexOf(player.id)!=-1}
-                                                        tabIndex={-1}
-                                                        disableRipple                                                        
+                                                    <ListItemButton role={undefined} onClick={handleToggle(player.id, player)} dense>
+                                                        <Checkbox
+                                                            edge="start"
+                                                            checked={allChecked.indexOf(player.id)!=-1}
+                                                            tabIndex={-1}
+                                                            disableRipple                                                        
                                                         />                                                  
-                                                    <ListItemText primary={`${player.firstName} ${player.lastName} with ${player.goals} goals and ${player.assists} assists`} secondary={`${player.teamName}`} />
+                                                        <ListItemText primary={`${player.firstName} ${player.lastName} with ${player.goals} goals and ${player.assists} assists`} secondary={`${player.teamName}`} />
                                                     </ListItemButton>
                                                 </ListItem>
                                             );
@@ -396,28 +488,116 @@ const CalculateStats = ({ signOut }) => {
                         {topGoalScorers.map((value) => {
                             return (
                                 <ListItem>
-                                    <ListItemAvatar>
-                                    <Avatar>
-                                        <PersonIcon />
-                                    </Avatar>
-                                    </ListItemAvatar>
-                                    <ListItemText primary={`${value.firstName} ${value.lastName} with ${value.goals} goals`} secondary={`${value.teamName}`} />
+                                    <ListItemButton role={undefined} onClick={handleTopGoalScorerSelected(value.id, value)} dense>
+                                        <Checkbox
+                                            edge="start"
+                                            checked={allTopGoalScorers.indexOf(value.id)!=-1}
+                                            tabIndex={-1}
+                                            disableRipple                                                        
+                                        />
+                                        <ListItemAvatar>
+                                        <Avatar>
+                                            <PersonIcon />
+                                        </Avatar>
+                                        </ListItemAvatar>
+                                        <ListItemText primary={`${value.firstName} ${value.lastName} with ${value.goals} goals`} secondary={`${value.teamName}`} />
+                                    </ListItemButton>
                                 </ListItem>
                             );
                         })}
                     </List>                    
                 </Flex>
 
-                <Button onClick={computeStatistics} type="submit" variation="primary">
-                Calculate Statistics
+                <Button onClick={generateReport} type="submit" variation="primary">
+                Generate Report
                 </Button>
             </View>  
                                
         );
     }    
 
+    function displayTopPlayersFromEachPosition(){
+        return (
+            Object.keys(playersByPosition).map((value) => {
+                return (
+                playersByPosition[value].map((player) => {
+                    return (
+                        <li><b>{value}:</b> {player.firstName} {player.lastName} - {player.teamName}</li>
+                    )
+                }))
+            })
+        );
+    }
 
-    return calcStats();
+    function displayPlayerOfTheWeek(){
+        return (
+            allTopPlayersOfWeekPlayers.map((player) => {
+                return (
+                    <li>{player.firstName} {player.lastName} - {player.teamName} ({player.goals} goals + {player.assists} assists)</li>
+                )
+        }));
+    }
+
+    function displayTopGoalScorers(){
+        return (
+            allTopGoalScorersPlayers.map((player) => {
+                return (
+                    <li>{player.firstName} {player.lastName} with {player.goals} goals - {player.teamName}</li>
+                )
+        }));
+    }
+
+    function displayReport() {          
+        return (
+            <View className="Referee">
+                
+                <Flex direction="row" justifyContent="center" alignItems="left">
+                    <h1 style={hStyle}>{selectedSeason} - {selectedDivision}</h1> 
+                </Flex>
+
+                <Flex direction="row" justifyContent="left" alignItems="left" margin={'1rem'}>
+                    <div style={divStyle}>
+                        <h4 style={hStyle}>{selectedDivision} - Week {selectedGameNumber}</h4>
+                    </div>
+                </Flex>
+
+                <Flex direction="row" justifyContent="left" alignItems="left" margin={'1rem'}>
+                    <div style={divStyle}>
+                    <h4 style={hStyle}>Week {selectedGameNumber} TOTW:</h4>
+                        <ul style={hStyle}>
+                            {displayTopPlayersFromEachPosition()}
+                        </ul>
+                    </div>
+                </Flex>
+                
+                <Flex direction="row" justifyContent="left" alignItems="left" margin={'1rem'}>
+                    <div style={divStyle}>
+                    <h4 style={hStyle}>POTW:</h4>
+                        <ul style={hStyle}>
+                            {displayPlayerOfTheWeek()}
+                        </ul>
+                    </div>
+                </Flex>
+
+                <Flex direction="row" justifyContent="left" alignItems="left" margin={'1rem'}>
+                    <div style={divStyle}>
+                    <h4 style={hStyle}>Top Goalscorers:</h4>
+                        <ul style={hStyle}>
+                            {displayTopGoalScorers()}
+                        </ul>
+                    </div>
+                </Flex>
+
+            </View>
+        );
+    }
+
+    if (generateReportClicked){
+        return displayReport();
+      }
+      else{
+        return calcStats();
+      }
 };
 
 export default (CalculateStats);
