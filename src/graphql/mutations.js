@@ -1,6 +1,54 @@
 /* eslint-disable */
 // this is an auto generated file. This will be overwritten
 
+export const createDivisions = /* GraphQL */ `
+  mutation CreateDivisions(
+    $input: CreateDivisionsInput!
+    $condition: ModelDivisionsConditionInput
+  ) {
+    createDivisions(input: $input, condition: $condition) {
+      id
+      season
+      division
+      year
+      createdAt
+      updatedAt
+      __typename
+    }
+  }
+`;
+export const updateDivisions = /* GraphQL */ `
+  mutation UpdateDivisions(
+    $input: UpdateDivisionsInput!
+    $condition: ModelDivisionsConditionInput
+  ) {
+    updateDivisions(input: $input, condition: $condition) {
+      id
+      season
+      division
+      year
+      createdAt
+      updatedAt
+      __typename
+    }
+  }
+`;
+export const deleteDivisions = /* GraphQL */ `
+  mutation DeleteDivisions(
+    $input: DeleteDivisionsInput!
+    $condition: ModelDivisionsConditionInput
+  ) {
+    deleteDivisions(input: $input, condition: $condition) {
+      id
+      season
+      division
+      year
+      createdAt
+      updatedAt
+      __typename
+    }
+  }
+`;
 export const createMatches = /* GraphQL */ `
   mutation CreateMatches(
     $input: CreateMatchesInput!

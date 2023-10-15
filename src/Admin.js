@@ -28,12 +28,20 @@ import {
   createRegisteredTeams as createTeam
 } from "./graphql/mutations";
 
+import {
+  createSeasons as createSeason
+} from "./graphql/mutations";
+
+import {
+  createDivisions as createDivision
+} from "./graphql/mutations";
+
 const Admin = ({ signOut }) => {
     const [value, setValue] = React.useState(0);
     const [playerRows, setPlayerRows] = React.useState([]);
     const [matchRows, setMatchRows] = React.useState([]);
     const [selectedSeason, setSelectedSeason] = useState("");
-  
+    
     const playerColumns = [
         { field: "id", hide: true },
         { field: "fname", headerName: "First Name", width: 150 },
@@ -254,9 +262,12 @@ const Admin = ({ signOut }) => {
           (event.type === 'click' && samePageLinkNavigation(event))
         ) {
           setValue(newValue);
-          if (newValue==3) {            
+          if (newValue==5) {            
             fetchSeasons();
-          }         
+          }   
+          if (newValue==3) {            
+            fetchSeasonsForDivision();
+          }       
         }
       };
 
@@ -363,6 +374,13 @@ const Admin = ({ signOut }) => {
       });    
     }
 
+    async function fetchSeasonsForDivision() {
+      API.graphql(graphqlOperation(listSeasons)).then((response) => {
+        const seasonsFromAPI = response.data.listSeasons.items;            
+        createSeasonsForDivision(seasonsFromAPI);      
+      });    
+    }
+
     function createSeasons(seasons){    
       var str="<option value=0>SELECT SEASON</option>";
       for (var i = 0; i < seasons.length; i++){
@@ -370,8 +388,16 @@ const Admin = ({ signOut }) => {
         str+="<option value=" + season.season + ">" + season.season + "</option>";      
       }
       document.getElementById("allseasonsadd").innerHTML = str;
-      console.log("HERE");
-    }  
+    } 
+
+    function createSeasonsForDivision(seasons){    
+      var str="<option value=0>SELECT SEASON</option>";
+      for (var i = 0; i < seasons.length; i++){
+        var season = seasons[i];
+        str+="<option value=" + season.id + ">" + season.season + " - " + season.year + "</option>";      
+      }
+      document.getElementById("allseasonsfordivision").innerHTML = str;
+    } 
 
 
     function removePlayersView() {
@@ -453,6 +479,87 @@ const Admin = ({ signOut }) => {
             <Button type="submit" variation="primary">
               ADD REFEREE
             </Button>
+            </View>
+          </div>
+      );
+    }
+
+    function addSeasonView() {
+      return (
+        <div className="Referee">
+        <View as="form"  onSubmit={addSeason} style={{width: Dimensions.get('window').width}}> 
+            <Flex direction="row" justifyContent="center" alignItems="left">     
+              <TextField
+                id="year"
+                name="year"
+                placeholder="Year (required)"
+                label="Year"
+                labelHidden
+                variation="quiet"
+                required
+                inputStyles={textboxStyle}
+              />
+
+            </Flex>
+
+            <Flex direction="row" justifyContent="center" >
+              <TextField
+                id="season"
+                name="season"
+                placeholder="Season Name (required)"
+                label="Season"
+                labelHidden
+                variation="quiet"
+                required
+                inputStyles={textboxStyle}
+              />    
+            </Flex>
+
+            <Button type="submit" variation="primary">
+              ADD SEASON
+            </Button>
+            </View>
+          </div>
+      );
+    }
+
+    function addDivisionView() {
+      return (
+        <div className="Referee">
+          <View as="form"  onSubmit={addDivision} style={{width: Dimensions.get('window').width}}>
+
+            <Flex direction="row" justifyContent="center" >
+                <SelectField
+                  id="allseasonsfordivision"
+                  name="seasonsfordivision"
+                  placeholder="SELECT SEASON"
+                  label="seasons"
+                  labelHidden
+                  variation="quiet"
+                  required
+                  inputStyles={textboxStyle}
+                  onChange={(e) => setSelectedSeason(e.target.value)}           
+                  >                                   
+                  <option value="placeholder">placeholder</option>
+                </SelectField>
+              </Flex>              
+
+              <Flex direction="row" justifyContent="center" >
+                <TextField
+                  id="divisionname"
+                  name="divisionname"
+                  placeholder="Division Name (required)"
+                  label="Division Name"
+                  labelHidden
+                  variation="quiet"
+                  required
+                  inputStyles={textboxStyle}
+                />    
+              </Flex>
+
+              <Button type="submit" variation="primary">
+                ADD TEAM
+              </Button>
             </View>
           </div>
       );
@@ -562,6 +669,52 @@ const Admin = ({ signOut }) => {
       event.target.reset();            
     }
 
+    async function addSeason(event) {
+      event.preventDefault();
+
+      var year = document.getElementById("year").value
+      var season = document.getElementById("season").value;
+      
+      const data = {
+        year: year,
+        season: season
+      };    
+    
+      await API.graphql({
+        query: createSeason,
+        variables: { input: data },
+      });              
+
+      alert("Season added succesfully");
+
+      event.target.reset();            
+    }
+
+    async function addDivision(event) {
+      event.preventDefault();
+
+      var division = document.getElementById("divisionname").value;
+      var season = document.getElementById("allseasonsfordivision").value;
+      
+      var response = await API.graphql(graphqlOperation(queries.listSeasons, { filter: {id: { eq: season }}}));
+      var seasonyear = response.data.listSeasons.items[0].year;
+
+      const data = {
+        division: division,
+        season: selectedSeason,
+        year: seasonyear
+      };
+    
+      await API.graphql({
+        query: createDivision,
+        variables: { input: data },
+      });
+
+      alert("Division added succesfully");
+
+      event.target.reset();        
+    }
+
     async function addTeam(event) {
       event.preventDefault();
 
@@ -595,13 +748,15 @@ const Admin = ({ signOut }) => {
                     <Tabs value={value} onChange={handleChange} aria-label="nav tabs example">
                         <LinkTab  label="Calculate Player Stats"/>
                         <LinkTab label="Remove Players"/>
+                        <LinkTab label="Add Season"/>
+                        <LinkTab label="Add Division"/>
                         <LinkTab label="Add Referees"/>
                         <LinkTab label="Add Team"/>
                         <LinkTab label="Match History"/>
                     </Tabs>
                 </Box>
                 
-                {value == 0 ? <CalculateStats/> : value == 1 ? removePlayersView() : value == 2 ? manageRefView() : value == 3 ? addTeamView() : matchHistoryView()}              
+                {value == 0 ? <CalculateStats/> : value == 1 ? removePlayersView() : value == 2 ? addSeasonView() : value == 3 ? addDivisionView() : value == 4 ? manageRefView() : value == 5 ? addTeamView() : matchHistoryView()}              
             </div>
         );
     }

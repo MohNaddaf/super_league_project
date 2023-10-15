@@ -1,6 +1,40 @@
 /* eslint-disable */
 // this is an auto generated file. This will be overwritten
 
+export const getDivisions = /* GraphQL */ `
+  query GetDivisions($id: ID!) {
+    getDivisions(id: $id) {
+      id
+      season
+      division
+      year
+      createdAt
+      updatedAt
+      __typename
+    }
+  }
+`;
+export const listDivisions = /* GraphQL */ `
+  query ListDivisions(
+    $filter: ModelDivisionsFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    listDivisions(filter: $filter, limit: $limit, nextToken: $nextToken) {
+      items {
+        id
+        season
+        division
+        year
+        createdAt
+        updatedAt
+        __typename
+      }
+      nextToken
+      __typename
+    }
+  }
+`;
 export const getMatches = /* GraphQL */ `
   query GetMatches($id: ID!) {
     getMatches(id: $id) {

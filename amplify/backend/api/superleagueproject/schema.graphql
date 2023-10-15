@@ -1,3 +1,10 @@
+type Divisions @model @auth(rules: [{allow: public}]) {
+  id: ID!
+  season: ID
+  division: String
+  year: String
+}
+
 type Matches @model @auth(rules: [{allow: public}]) {
   id: ID!
   hometeam: String

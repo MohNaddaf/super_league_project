@@ -1,6 +1,51 @@
 /* eslint-disable */
 // this is an auto generated file. This will be overwritten
 
+export const onCreateDivisions = /* GraphQL */ `
+  subscription OnCreateDivisions(
+    $filter: ModelSubscriptionDivisionsFilterInput
+  ) {
+    onCreateDivisions(filter: $filter) {
+      id
+      season
+      division
+      year
+      createdAt
+      updatedAt
+      __typename
+    }
+  }
+`;
+export const onUpdateDivisions = /* GraphQL */ `
+  subscription OnUpdateDivisions(
+    $filter: ModelSubscriptionDivisionsFilterInput
+  ) {
+    onUpdateDivisions(filter: $filter) {
+      id
+      season
+      division
+      year
+      createdAt
+      updatedAt
+      __typename
+    }
+  }
+`;
+export const onDeleteDivisions = /* GraphQL */ `
+  subscription OnDeleteDivisions(
+    $filter: ModelSubscriptionDivisionsFilterInput
+  ) {
+    onDeleteDivisions(filter: $filter) {
+      id
+      season
+      division
+      year
+      createdAt
+      updatedAt
+      __typename
+    }
+  }
+`;
 export const onCreateMatches = /* GraphQL */ `
   subscription OnCreateMatches($filter: ModelSubscriptionMatchesFilterInput) {
     onCreateMatches(filter: $filter) {
