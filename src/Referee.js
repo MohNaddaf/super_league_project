@@ -97,9 +97,11 @@ const handleToggle = (value, homeoraway) => () => {
         var homeTeam = document.getElementById("allteamshome").value;
         var awayTeam = document.getElementById("allteamsaway").value;
         var ref = document.getElementById("allrefs").value;
+        var season = document.getElementById("allseasons").value;
+        var division = document.getElementById("alldivisions").value;
 
-        if (homeTeam == 0 || awayTeam == 0 || ref == 0 ) {
-            alert("Please ensure ref and teams are selected!");      
+        if (homeTeam == 0 || awayTeam == 0 || ref == 0 || season == 0 || division == 0) {
+            alert("Please ensure all fields are selected!");      
         }
         else if(homeTeam==awayTeam){
             alert("Please choose two different teams!");      
