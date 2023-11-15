@@ -15,6 +15,10 @@ type Matches @model @auth(rules: [{allow: public}]) {
   division: String
   year: String
   referee: String
+  gamenumber: Int
+  hometeamgamenumber: Int
+  awayteamgamenumber: Int
+  gamedate: String
 }
 
 type Seasons @model @auth(rules: [{allow: public}]) {
@@ -22,6 +26,7 @@ type Seasons @model @auth(rules: [{allow: public}]) {
   season: String
   year: String
   startdate: AWSDate
+  isseasonactive: Boolean
 }
 
 type Refs @model @auth(rules: [{allow: public}]) {
@@ -53,6 +58,7 @@ type RegisteredPlayers @model @auth(rules: [{allow: public}]) {
   totalcontributions: Int
   year: String
   onRoster: Boolean
+  suspendeduntilgamenumber: Int
 }
 
 type RegisteredTeams @model @auth(rules: [{allow: public}]) {

@@ -7,8 +7,7 @@
 /* eslint-disable */
 import * as React from "react";
 import { Button, Flex, Grid, TextField } from "@aws-amplify/ui-react";
-import { getOverrideProps } from "@aws-amplify/ui-react/internal";
-import { fetchByPath, validateField } from "./utils";
+import { fetchByPath, getOverrideProps, validateField } from "./utils";
 import { API } from "aws-amplify";
 import { getRegisteredTeams } from "../graphql/queries";
 import { updateRegisteredTeams } from "../graphql/mutations";
@@ -58,7 +57,7 @@ export default function RegisteredTeamsUpdateForm(props) {
       const record = idProp
         ? (
             await API.graphql({
-              query: getRegisteredTeams,
+              query: getRegisteredTeams.replaceAll("__typename", ""),
               variables: { id: idProp },
             })
           )?.data?.getRegisteredTeams
@@ -136,7 +135,7 @@ export default function RegisteredTeamsUpdateForm(props) {
             }
           });
           await API.graphql({
-            query: updateRegisteredTeams,
+            query: updateRegisteredTeams.replaceAll("__typename", ""),
             variables: {
               input: {
                 id: registeredTeamsRecord.id,

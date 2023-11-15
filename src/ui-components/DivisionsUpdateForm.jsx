@@ -7,8 +7,7 @@
 /* eslint-disable */
 import * as React from "react";
 import { Button, Flex, Grid, TextField } from "@aws-amplify/ui-react";
-import { getOverrideProps } from "@aws-amplify/ui-react/internal";
-import { fetchByPath, validateField } from "./utils";
+import { fetchByPath, getOverrideProps, validateField } from "./utils";
 import { API } from "aws-amplify";
 import { getDivisions } from "../graphql/queries";
 import { updateDivisions } from "../graphql/mutations";
@@ -49,7 +48,7 @@ export default function DivisionsUpdateForm(props) {
       const record = idProp
         ? (
             await API.graphql({
-              query: getDivisions,
+              query: getDivisions.replaceAll("__typename", ""),
               variables: { id: idProp },
             })
           )?.data?.getDivisions
@@ -123,7 +122,7 @@ export default function DivisionsUpdateForm(props) {
             }
           });
           await API.graphql({
-            query: updateDivisions,
+            query: updateDivisions.replaceAll("__typename", ""),
             variables: {
               input: {
                 id: divisionsRecord.id,

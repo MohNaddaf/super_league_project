@@ -7,8 +7,7 @@
 /* eslint-disable */
 import * as React from "react";
 import { Button, Flex, Grid, TextField } from "@aws-amplify/ui-react";
-import { getOverrideProps } from "@aws-amplify/ui-react/internal";
-import { fetchByPath, validateField } from "./utils";
+import { fetchByPath, getOverrideProps, validateField } from "./utils";
 import { API } from "aws-amplify";
 import { createRefs } from "../graphql/mutations";
 export default function RefsCreateForm(props) {
@@ -108,7 +107,7 @@ export default function RefsCreateForm(props) {
             }
           });
           await API.graphql({
-            query: createRefs,
+            query: createRefs.replaceAll("__typename", ""),
             variables: {
               input: {
                 ...modelFields,

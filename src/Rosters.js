@@ -62,22 +62,16 @@ const Rosters = ({ signOut }) => {
     async function fetchDivisions(season) {
         var apiData = {};
         if (season=="" || season==undefined) {
-            apiData = await API.graphql(graphqlOperation(queries.listRegisteredTeams, { filter: { year: { eq: new Date().getFullYear() }}}));
+            return;
         }
         else{            
-            apiData = await API.graphql(graphqlOperation(queries.listRegisteredTeams, { filter: { season: { eq: season }, year: { eq: new Date().getFullYear() }}}));
+            apiData = await API.graphql(graphqlOperation(queries.listDivisions, { filter: { season: { eq: season }, year: { eq: new Date().getFullYear() }}}));
         }
         
-        const teamsFromAPI = apiData.data.listRegisteredTeams.items;
-        var divs = [];
-        for (var i=0; i<teamsFromAPI.length;i++) {
-            if (divs.includes(teamsFromAPI[i].divison) == false) {
-                divs.push(teamsFromAPI[i].divison);
-            }
-        }
-
-        createDivisions(divs);
-    }
+        const divisionsFromApi = apiData.data.listDivisions.items;
+          
+        createDivisions(divisionsFromApi);
+      }
 
     async function fetchTeams(season, division) {    
         var apiData = {};
@@ -105,7 +99,7 @@ const Rosters = ({ signOut }) => {
         var str="<option value=0>SELECT SEASON</option>";
         for (var i = 0; i < seasons.length; i++){
             var season = seasons[i];
-            str+="<option value=" + season.season + ">" + season.season + "</option>";      
+            str+="<option value=" + season.id + ">" + season.season + " - " + season.year + "</option>";      
         }
         document.getElementById("allseasons").innerHTML = str;         
     }
@@ -114,16 +108,17 @@ const Rosters = ({ signOut }) => {
         var str="<option value=0>SELECT DIVISION</option>";
         for (var i = 0; i < divisions.length; i++){
             var division = divisions[i];
-            str+="<option value=\"" + division + "\">" + division + "</option>";      
+            str+="<option value=" + division.id + ">" + division.division + "</option>";      
         }
         document.getElementById("alldivisions").innerHTML = str;         
     }
 
-    function createTeams(teams){    
+    async function createTeams(teams){    
         var str="<option value=0>SELECT YOUR TEAM</option>";
         for (var i = 0; i < teams.length; i++){
           var team = teams[i];
-          str+="<option value=" + team.id + ">" + team.teamname + " - " + team.divison + "</option>";      
+          var division = (await API.graphql(graphqlOperation(queries.getDivisions, { id: team.divison}))).data.getDivisions;
+          str+="<option value=" + team.id + ">" + team.teamname + " - " + division.division + "</option>";      
         }
         document.getElementById("allteams").innerHTML = str;         
     }
@@ -314,7 +309,6 @@ const Rosters = ({ signOut }) => {
                         inputStyles={textboxStyle}
                         onChange={(e) => updateDivisionsAndTeams(e.target.value)}
                         >                                   
-                        <option value="placeholder">placeholder</option>
                     </SelectField>
                 </Flex>
 
@@ -330,10 +324,6 @@ const Rosters = ({ signOut }) => {
                         inputStyles={textboxStyle}
                         onChange={(e) => updateTeams(e.target.value)}
                         >
-                        <option value="Div A">Div A</option>
-                        <option value="Div B">Div B</option>
-                        <option value="PREM">PREM</option>
-                        <option value="COED">COED</option>
                     </SelectField>
                 </Flex>
 

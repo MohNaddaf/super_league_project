@@ -5,8 +5,17 @@
  **************************************************************************/
 
 import * as React from "react";
-import { GridProps, TextFieldProps } from "@aws-amplify/ui-react";
-import { EscapeHatchProps } from "@aws-amplify/ui-react/internal";
+import { GridProps, SwitchFieldProps, TextFieldProps } from "@aws-amplify/ui-react";
+export declare type EscapeHatchProps = {
+    [elementHierarchy: string]: Record<string, unknown>;
+} | null;
+export declare type VariantValues = {
+    [key: string]: string;
+};
+export declare type Variant = {
+    variantValues: VariantValues;
+    overrides: EscapeHatchProps;
+};
 export declare type ValidationResponse = {
     hasError: boolean;
     errorMessage?: string;
@@ -16,11 +25,13 @@ export declare type SeasonsCreateFormInputValues = {
     season?: string;
     year?: string;
     startdate?: string;
+    isseasonactive?: boolean;
 };
 export declare type SeasonsCreateFormValidationValues = {
     season?: ValidationFunction<string>;
     year?: ValidationFunction<string>;
     startdate?: ValidationFunction<string>;
+    isseasonactive?: ValidationFunction<boolean>;
 };
 export declare type PrimitiveOverrideProps<T> = Partial<T> & React.DOMAttributes<HTMLDivElement>;
 export declare type SeasonsCreateFormOverridesProps = {
@@ -28,6 +39,7 @@ export declare type SeasonsCreateFormOverridesProps = {
     season?: PrimitiveOverrideProps<TextFieldProps>;
     year?: PrimitiveOverrideProps<TextFieldProps>;
     startdate?: PrimitiveOverrideProps<TextFieldProps>;
+    isseasonactive?: PrimitiveOverrideProps<SwitchFieldProps>;
 } & EscapeHatchProps;
 export declare type SeasonsCreateFormProps = React.PropsWithChildren<{
     overrides?: SeasonsCreateFormOverridesProps | undefined | null;

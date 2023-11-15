@@ -13,8 +13,7 @@ import {
   SwitchField,
   TextField,
 } from "@aws-amplify/ui-react";
-import { getOverrideProps } from "@aws-amplify/ui-react/internal";
-import { fetchByPath, validateField } from "./utils";
+import { fetchByPath, getOverrideProps, validateField } from "./utils";
 import { API } from "aws-amplify";
 import { createRegisteredPlayers } from "../graphql/mutations";
 export default function RegisteredPlayersCreateForm(props) {
@@ -48,6 +47,7 @@ export default function RegisteredPlayersCreateForm(props) {
     totalcontributions: "",
     year: "",
     onRoster: false,
+    suspendeduntilgamenumber: "",
   };
   const [firstname, setFirstname] = React.useState(initialValues.firstname);
   const [lastname, setLastname] = React.useState(initialValues.lastname);
@@ -78,6 +78,8 @@ export default function RegisteredPlayersCreateForm(props) {
   );
   const [year, setYear] = React.useState(initialValues.year);
   const [onRoster, setOnRoster] = React.useState(initialValues.onRoster);
+  const [suspendeduntilgamenumber, setSuspendeduntilgamenumber] =
+    React.useState(initialValues.suspendeduntilgamenumber);
   const [errors, setErrors] = React.useState({});
   const resetStateValues = () => {
     setFirstname(initialValues.firstname);
@@ -99,6 +101,7 @@ export default function RegisteredPlayersCreateForm(props) {
     setTotalcontributions(initialValues.totalcontributions);
     setYear(initialValues.year);
     setOnRoster(initialValues.onRoster);
+    setSuspendeduntilgamenumber(initialValues.suspendeduntilgamenumber);
     setErrors({});
   };
   const validations = {
@@ -121,6 +124,7 @@ export default function RegisteredPlayersCreateForm(props) {
     totalcontributions: [],
     year: [],
     onRoster: [],
+    suspendeduntilgamenumber: [],
   };
   const runValidationTasks = async (
     fieldName,
@@ -167,6 +171,7 @@ export default function RegisteredPlayersCreateForm(props) {
           totalcontributions,
           year,
           onRoster,
+          suspendeduntilgamenumber,
         };
         const validationResponses = await Promise.all(
           Object.keys(validations).reduce((promises, fieldName) => {
@@ -197,7 +202,7 @@ export default function RegisteredPlayersCreateForm(props) {
             }
           });
           await API.graphql({
-            query: createRegisteredPlayers,
+            query: createRegisteredPlayers.replaceAll("__typename", ""),
             variables: {
               input: {
                 ...modelFields,
@@ -248,6 +253,7 @@ export default function RegisteredPlayersCreateForm(props) {
               totalcontributions,
               year,
               onRoster,
+              suspendeduntilgamenumber,
             };
             const result = onChange(modelFields);
             value = result?.firstname ?? value;
@@ -290,6 +296,7 @@ export default function RegisteredPlayersCreateForm(props) {
               totalcontributions,
               year,
               onRoster,
+              suspendeduntilgamenumber,
             };
             const result = onChange(modelFields);
             value = result?.lastname ?? value;
@@ -332,6 +339,7 @@ export default function RegisteredPlayersCreateForm(props) {
               totalcontributions,
               year,
               onRoster,
+              suspendeduntilgamenumber,
             };
             const result = onChange(modelFields);
             value = result?.teamname ?? value;
@@ -374,6 +382,7 @@ export default function RegisteredPlayersCreateForm(props) {
               totalcontributions,
               year,
               onRoster,
+              suspendeduntilgamenumber,
             };
             const result = onChange(modelFields);
             value = result?.division ?? value;
@@ -416,6 +425,7 @@ export default function RegisteredPlayersCreateForm(props) {
               totalcontributions,
               year,
               onRoster,
+              suspendeduntilgamenumber,
             };
             const result = onChange(modelFields);
             value = result?.season ?? value;
@@ -458,6 +468,7 @@ export default function RegisteredPlayersCreateForm(props) {
               totalcontributions,
               year,
               onRoster,
+              suspendeduntilgamenumber,
             };
             const result = onChange(modelFields);
             value = result?.position ?? value;
@@ -500,6 +511,7 @@ export default function RegisteredPlayersCreateForm(props) {
               totalcontributions,
               year,
               onRoster,
+              suspendeduntilgamenumber,
             };
             const result = onChange(modelFields);
             value = result?.captain ?? value;
@@ -542,6 +554,7 @@ export default function RegisteredPlayersCreateForm(props) {
               totalcontributions,
               year,
               onRoster,
+              suspendeduntilgamenumber,
             };
             const result = onChange(modelFields);
             value = result?.email ?? value;
@@ -584,6 +597,7 @@ export default function RegisteredPlayersCreateForm(props) {
               totalcontributions,
               year,
               onRoster,
+              suspendeduntilgamenumber,
             };
             const result = onChange(modelFields);
             value = result?.phonenumber ?? value;
@@ -626,6 +640,7 @@ export default function RegisteredPlayersCreateForm(props) {
               totalcontributions,
               year,
               onRoster,
+              suspendeduntilgamenumber,
             };
             const result = onChange(modelFields);
             value = result?.instagramhandle ?? value;
@@ -668,6 +683,7 @@ export default function RegisteredPlayersCreateForm(props) {
               totalcontributions,
               year,
               onRoster,
+              suspendeduntilgamenumber,
             };
             const result = onChange(modelFields);
             value = result?.teamid ?? value;
@@ -710,6 +726,7 @@ export default function RegisteredPlayersCreateForm(props) {
               totalcontributions,
               year,
               onRoster,
+              suspendeduntilgamenumber,
             };
             const result = onChange(modelFields);
             value = result?.goals ?? value;
@@ -752,6 +769,7 @@ export default function RegisteredPlayersCreateForm(props) {
               totalcontributions,
               year,
               onRoster,
+              suspendeduntilgamenumber,
             };
             const result = onChange(modelFields);
             value = result?.assists ?? value;
@@ -794,6 +812,7 @@ export default function RegisteredPlayersCreateForm(props) {
               totalcontributions,
               year,
               onRoster,
+              suspendeduntilgamenumber,
             };
             const result = onChange(modelFields);
             value = result?.contributions ?? value;
@@ -840,6 +859,7 @@ export default function RegisteredPlayersCreateForm(props) {
               totalcontributions,
               year,
               onRoster,
+              suspendeduntilgamenumber,
             };
             const result = onChange(modelFields);
             value = result?.totalgoals ?? value;
@@ -886,6 +906,7 @@ export default function RegisteredPlayersCreateForm(props) {
               totalcontributions,
               year,
               onRoster,
+              suspendeduntilgamenumber,
             };
             const result = onChange(modelFields);
             value = result?.totalassists ?? value;
@@ -932,6 +953,7 @@ export default function RegisteredPlayersCreateForm(props) {
               totalcontributions: value,
               year,
               onRoster,
+              suspendeduntilgamenumber,
             };
             const result = onChange(modelFields);
             value = result?.totalcontributions ?? value;
@@ -976,6 +998,7 @@ export default function RegisteredPlayersCreateForm(props) {
               totalcontributions,
               year: value,
               onRoster,
+              suspendeduntilgamenumber,
             };
             const result = onChange(modelFields);
             value = result?.year ?? value;
@@ -1018,6 +1041,7 @@ export default function RegisteredPlayersCreateForm(props) {
               totalcontributions,
               year,
               onRoster: value,
+              suspendeduntilgamenumber,
             };
             const result = onChange(modelFields);
             value = result?.onRoster ?? value;
@@ -1032,6 +1056,58 @@ export default function RegisteredPlayersCreateForm(props) {
         hasError={errors.onRoster?.hasError}
         {...getOverrideProps(overrides, "onRoster")}
       ></SwitchField>
+      <TextField
+        label="Suspendeduntilgamenumber"
+        isRequired={false}
+        isReadOnly={false}
+        type="number"
+        step="any"
+        value={suspendeduntilgamenumber}
+        onChange={(e) => {
+          let value = isNaN(parseInt(e.target.value))
+            ? e.target.value
+            : parseInt(e.target.value);
+          if (onChange) {
+            const modelFields = {
+              firstname,
+              lastname,
+              teamname,
+              division,
+              season,
+              position,
+              captain,
+              email,
+              phonenumber,
+              instagramhandle,
+              teamid,
+              goals,
+              assists,
+              contributions,
+              totalgoals,
+              totalassists,
+              totalcontributions,
+              year,
+              onRoster,
+              suspendeduntilgamenumber: value,
+            };
+            const result = onChange(modelFields);
+            value = result?.suspendeduntilgamenumber ?? value;
+          }
+          if (errors.suspendeduntilgamenumber?.hasError) {
+            runValidationTasks("suspendeduntilgamenumber", value);
+          }
+          setSuspendeduntilgamenumber(value);
+        }}
+        onBlur={() =>
+          runValidationTasks(
+            "suspendeduntilgamenumber",
+            suspendeduntilgamenumber
+          )
+        }
+        errorMessage={errors.suspendeduntilgamenumber?.errorMessage}
+        hasError={errors.suspendeduntilgamenumber?.hasError}
+        {...getOverrideProps(overrides, "suspendeduntilgamenumber")}
+      ></TextField>
       <Flex
         justifyContent="space-between"
         {...getOverrideProps(overrides, "CTAFlex")}

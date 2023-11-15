@@ -49,15 +49,10 @@ const PlayerRegistration = ({ signOut }) => {
     var apiData = {};
 
     if (season==undefined || season=="") {
-        if (division==undefined || division==""){
-          apiData = await API.graphql(graphqlOperation(queries.listRegisteredTeams, { filter: { year: { eq: new Date().getFullYear() }}}));
-        }
-        else{
-          apiData = await API.graphql(graphqlOperation(queries.listRegisteredTeams, { filter: { divison: { eq: division }, year: { eq: new Date().getFullYear() }}}));
-        }
+        return;
     }
     else if (division==undefined || division=="") {
-      apiData = await API.graphql(graphqlOperation(queries.listRegisteredTeams, { filter: { season: { eq: season }, year: { eq: new Date().getFullYear() }}}));
+      return;
     }
     else{
         apiData = await API.graphql(graphqlOperation(queries.listRegisteredTeams, { filter: { season: { eq: season }, divison: { eq: division }, year: { eq: new Date().getFullYear() }}}));
@@ -69,7 +64,7 @@ const PlayerRegistration = ({ signOut }) => {
   }  
 
   async function fetchSeasons() {
-    API.graphql(graphqlOperation(listSeasons, { filter: { year: { eq: new Date().getFullYear() }}})).then((response) => {
+    API.graphql(graphqlOperation(listSeasons, { filter: { year: { eq: new Date().getFullYear() }, isseasonactive: { eq: true }}})).then((response) => {
       const seasonsFromAPI = response.data.listSeasons.items;
       setSeasons(seasonsFromAPI);      
       createSeasons(seasonsFromAPI);      
@@ -79,21 +74,15 @@ const PlayerRegistration = ({ signOut }) => {
   async function fetchDivisions(season) {
     var apiData = {};
     if (season=="" || season==undefined) {
-        apiData = await API.graphql(graphqlOperation(queries.listRegisteredTeams, { filter: { year: { eq: new Date().getFullYear() }}}));
+      return;
     }
     else{            
-        apiData = await API.graphql(graphqlOperation(queries.listRegisteredTeams, { filter: { season: { eq: season }, year: { eq: new Date().getFullYear() }}}));
+      apiData = await API.graphql(graphqlOperation(queries.listDivisions, { filter: { season: { eq: season }, year: { eq: new Date().getFullYear() }}}));
     }
     
-    const teamsFromAPI = apiData.data.listRegisteredTeams.items;
-    var divs = [];
-    for (var i=0; i<teamsFromAPI.length;i++) {
-        if (divs.includes(teamsFromAPI[i].divison) == false) {
-            divs.push(teamsFromAPI[i].divison);
-        }
-    }
+    const divisionsFromApi = apiData.data.listDivisions.items;
 
-    createDivisions(divs);
+    createDivisions(divisionsFromApi);
   }
 
   async function updateDivisionsAndTeams(season) {
@@ -107,11 +96,13 @@ const PlayerRegistration = ({ signOut }) => {
     fetchTeams(selectedSeason, division);
   }
 
-  function createTeams(teams){    
+
+  async function createTeams(teams){    
       var str="<option value=0>SELECT YOUR TEAM</option>";
       for (var i = 0; i < teams.length; i++){
         var team = teams[i];
-        str+="<option value=" + team.id + ">" + team.teamname + " - " + team.divison + "</option>";      
+        var division = (await API.graphql(graphqlOperation(queries.getDivisions, { id: team.divison}))).data.getDivisions;
+        str+="<option value=" + team.id + ">" + team.teamname + " - " + division.division + "</option>";      
       }
       document.getElementById("allteams").innerHTML = str;         
   }
@@ -120,7 +111,7 @@ const PlayerRegistration = ({ signOut }) => {
     var str="<option value=0>SELECT SEASON</option>";
     for (var i = 0; i < seasons.length; i++){
       var season = seasons[i];
-      str+="<option value=" + season.season + ">" + season.season + "</option>";      
+      str+="<option value=" + season.id + ">" + season.season + " - " + season.year + "</option>";      
     }
     document.getElementById("allseasons").innerHTML = str;         
   }
@@ -129,20 +120,19 @@ const PlayerRegistration = ({ signOut }) => {
     var str="<option value=0>SELECT DIVISION</option>";
     for (var i = 0; i < divisions.length; i++){
         var division = divisions[i];
-        str+="<option value=\"" + division + "\">" + division + "</option>";      
+        str+="<option value=" + division.id + ">" + division.division + "</option>";      
     }
     document.getElementById("alldivisions").innerHTML = str;         
-  }
+  }  
 
   async function createRegisteredPlayer(event) {
-    event.preventDefault();
+    event.preventDefault();    
 
     if (!checked) {
       setHasError(true);
     } else {
       setHasError(false);
     
-
     const form = new FormData(event.target);
 
     var teamID = document.getElementById("allteams").value;
@@ -167,29 +157,45 @@ const PlayerRegistration = ({ signOut }) => {
         }
       }
 
-        const data = {
-          firstname: form.get("fname"),
-          lastname: form.get("lname"),
-          teamname: teamName,
-          division: division,
-          season: season,
-          position: position,
-          email: form.get("email"),
-          teamid: teamID,
-          phonenumber: form.get("phone"),
-          instagramhandle: form.get("instagram"),
-          year: new Date().getFullYear(),
-          onRoster: true
-        };
+      API.graphql(graphqlOperation(queries.listRegisteredPlayers, { filter: { firstname: { eq: form.get("fname") }, lastname: { eq: form.get("lname") }, division: {eq: division}}})).then(async (response) => {
+        const playersFromAPI = response.data.listRegisteredPlayers.items;
+        var token = response.data.listRegisteredPlayers.nextToken;
+            
+        while (token!=null) {
+            var results = await API.graphql(graphqlOperation(queries.listRegisteredPlayers, {filter: { firstname: { eq: form.get("fname") }, lastname: { eq: form.get("lname") }, division: {eq: division}}, nextToken:token}));
+            playersFromAPI.push.apply(playersFromAPI, results.data.listRegisteredPlayers.items);
+            token = results.data.listRegisteredPlayers.nextToken;
+        }
 
-        console.log(data);
-        
-        await API.graphql({
-          query: createRegisteredPlayerMutation,
-          variables: { input: data },
-        });                
-
-        setRegistrationDone(true);
+        if (playersFromAPI.length > 0) {
+          alert("You have already registered for the specified division");
+          return;
+        }
+        else{
+          const data = {
+            firstname: form.get("fname"),
+            lastname: form.get("lname"),
+            teamname: teamName,
+            division: division,
+            season: season,
+            position: position,
+            email: form.get("email"),
+            teamid: teamID,
+            phonenumber: form.get("phone"),
+            instagramhandle: form.get("instagram"),
+            year: new Date().getFullYear(),
+            onRoster: true
+          };            
+          
+          await API.graphql({
+            query: createRegisteredPlayerMutation,
+            variables: { input: data },
+          });                
+          
+          setRegistrationDone(true);
+        }
+      });
+              
       }
     }
   }
@@ -283,10 +289,6 @@ const PlayerRegistration = ({ signOut }) => {
                     inputStyles={textboxStyle}
                     onChange={(e) => updateTeams(e.target.value)}
                     >
-                    <option value="Div A">Div A</option>
-                    <option value="Div B">Div B</option>
-                    <option value="PREM">PREM</option>
-                    <option value="COED">COED</option>
                 </SelectField>
             </Flex>
 
@@ -301,7 +303,6 @@ const PlayerRegistration = ({ signOut }) => {
                 required
                 inputStyles={textboxStyle}
                 >                                   
-                <option value="placeholder">placeholder</option>
               </SelectField>
             </Flex>
 

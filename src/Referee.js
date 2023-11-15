@@ -28,7 +28,6 @@ const [teams, setTeams] = useState([]);
 const [seasons, setSeasons] = useState([]);
 const [divisions, setDivisions] = useState([]);
 const [selectedSeason, setSelectedSeason] = useState("");
-const [selectedSeasonStartDate, setSelectedSeasonStartDate] = useState("");
 const [selectedDivision, setSelectedDivision] = useState("");
 const [currentRef, setCurrentRef] = useState("");
 const [selectedTeam, setSelectedTeam] = useState("");
@@ -113,24 +112,22 @@ const handleToggle = (value, homeoraway) => () => {
         }    
     }
 
-    async function fetchTeams(division,seasonSelected) {
+    async function fetchTeams(season, division) {    
+        
+        
         var apiData = {};
-        if ((division==undefined || division=="") && (seasonSelected==undefined || seasonSelected=="")) {
-            apiData = await API.graphql(graphqlOperation(queries.listRegisteredTeams, { filter: { year: { eq: new Date().getFullYear() }}}));
+    
+        if (season==undefined || season=="") {
+            return;
         }
-        else if (seasonSelected==undefined || seasonSelected==""){
-            setSelectedDivision(division);
-            apiData = await API.graphql(graphqlOperation(queries.listRegisteredTeams, { filter: { divison: { eq: division }, year: { eq: new Date().getFullYear() }}}));
+        else if (division==undefined || division=="") {
+          return;
         }
-        else if (division==undefined || division==""){
-            apiData = await API.graphql(graphqlOperation(queries.listRegisteredTeams, { filter: { season: { eq: seasonSelected }, year: { eq: new Date().getFullYear() }}}));
+        else{     
+            setSelectedDivision(division);                  
+            apiData = await API.graphql(graphqlOperation(queries.listRegisteredTeams, { filter: { season: { eq: season }, divison: { eq: division }, year: { eq: new Date().getFullYear() }}}));            
         }
-        else{
-            setSelectedDivision(division);            
-            apiData = await API.graphql(graphqlOperation(queries.listRegisteredTeams, { filter: { divison: { eq: division }, season: { eq: seasonSelected }, year: { eq: new Date().getFullYear() }}}));
-                        
-        }
-
+    
         const teamsFromAPI = apiData.data.listRegisteredTeams.items;
         setTeams(teamsFromAPI);
         createHomeTeams(teamsFromAPI);
@@ -155,35 +152,21 @@ const handleToggle = (value, homeoraway) => () => {
     async function fetchDivisions(season) {
         var apiData = {};
         if (season=="" || season==undefined) {
-            apiData = await API.graphql(graphqlOperation(queries.listRegisteredTeams, { filter: { year: { eq: new Date().getFullYear() }}}));
+            return;
         }
         else{            
-            apiData = await API.graphql(graphqlOperation(queries.listRegisteredTeams, { filter: { season: { eq: season }, year: { eq: new Date().getFullYear() }}}));
+            apiData = await API.graphql(graphqlOperation(queries.listDivisions, { filter: { season: { eq: season }, year: { eq: new Date().getFullYear() }}}));
         }
         
-        const teamsFromAPI = apiData.data.listRegisteredTeams.items;
-        var divs = [];
-        for (var i=0; i<teamsFromAPI.length;i++) {
-            if (divs.includes(teamsFromAPI[i].divison) == false) {
-                divs.push(teamsFromAPI[i].divison);
-            }
-        }
-
-        setDivisions(divs);
-        createDivisions(divs);
-    }
+        const divisionsFromApi = apiData.data.listDivisions.items;
+          
+        createDivisions(divisionsFromApi);
+      }
 
     async function updateDivisionsAndTeams(season) {
         setSelectedSeason(season);
-
-        for (var i=0; i<seasons.length;i++) {
-            if (seasons[i].season == season && seasons[i].year == new Date().getFullYear()) {
-                setSelectedSeasonStartDate(seasons[i].startdate);
-            }
-        }
-
         fetchDivisions(season);        
-        fetchTeams(selectedDivision, season);        
+        fetchTeams(season, selectedDivision);        
     }
 
     async function fetchCurrentPlayer(playerid, homeoraway) { 
@@ -265,7 +248,7 @@ const handleToggle = (value, homeoraway) => () => {
 
     async function doesPlayerPlayInHigherDivision(player) {            
            var playsHigher = false;
-
+            /*
             for (var div in divisionMapping){
                 if (divisionMapping[div] < divisionMapping[player.division]){
                     await API.graphql(graphqlOperation(queries.listRegisteredPlayers, { filter: { season: { eq: player.season }, division: { eq: div }, year: { eq: player.year }, firstname: { eq: player.firstname }, lastname: { eq: player.lastname }}})).then((response) => {
@@ -276,6 +259,7 @@ const handleToggle = (value, homeoraway) => () => {
                     });
                 }
             }
+            */
             return playsHigher;           
     }
 
@@ -283,7 +267,7 @@ const handleToggle = (value, homeoraway) => () => {
         var str="<option value=0>SELECT SEASON</option>";
         for (var i = 0; i < seasons.length; i++){
             var season = seasons[i];
-            str+="<option value=" + season.season + ">" + season.season + "</option>";      
+            str+="<option value=" + season.id + ">" + season.season + " - " + season.year + "</option>";      
         }
         document.getElementById("allseasons").innerHTML = str;         
     }
@@ -292,30 +276,32 @@ const handleToggle = (value, homeoraway) => () => {
         var str="<option value=0>SELECT DIVISION</option>";
         for (var i = 0; i < divisions.length; i++){
             var division = divisions[i];
-            str+="<option value=\"" + division + "\">" + division + "</option>";      
+            str+="<option value=" + division.id + ">" + division.division + "</option>";      
         }
         document.getElementById("alldivisions").innerHTML = str;         
     }
 
-    function createHomeTeams(teams){    
+    async function createHomeTeams(teams){    
         var str="<option value=0>SELECT HOME TEAM</option>";
         var currentYear = new Date().getFullYear();
         for (var i = 0; i < teams.length; i++){
             var team = teams[i];
+            var division = (await API.graphql(graphqlOperation(queries.getDivisions, { id: team.divison}))).data.getDivisions;
             if (currentYear == team.year){
-                str+="<option value=" + team.id + ">" + team.teamname + " - " + team.divison + " - " + new Date().getFullYear() + "</option>";      
+                str+="<option value=" + team.id + ">" + team.teamname + " - " + division.division + " - " + new Date().getFullYear() + "</option>";      
             }
         }
         document.getElementById("allteamshome").innerHTML = str;         
     }
 
-    function createAwayTeams(teams){    
+    async function createAwayTeams(teams){    
         var str="<option value=0>SELECT AWAY TEAM</option>";
         var currentYear = new Date().getFullYear();
         for (var i = 0; i < teams.length; i++){
             var team = teams[i];
+            var division = (await API.graphql(graphqlOperation(queries.getDivisions, { id: team.divison}))).data.getDivisions;
             if (currentYear == team.year){
-                str+="<option value=" + team.id + ">" + team.teamname + " - " + team.divison + " - " + new Date().getFullYear() + "</option>";      
+                str+="<option value=" + team.id + ">" + team.teamname + " - " + division.division + " - " + new Date().getFullYear() + "</option>";      
             }
         }
         document.getElementById("allteamsaway").innerHTML = str;         
@@ -369,7 +355,6 @@ const handleToggle = (value, homeoraway) => () => {
                             required
                             inputStyles={textboxStyle}
                             >                                   
-                            <option value="placeholder">placeholder</option>
                         </SelectField>
                     </Flex>
         
@@ -385,7 +370,6 @@ const handleToggle = (value, homeoraway) => () => {
                             inputStyles={textboxStyle}
                             onChange={(e) => updateDivisionsAndTeams(e.target.value)}
                             >                                   
-                            <option value="placeholder">placeholder</option>
                         </SelectField>
                     </Flex>
 
@@ -399,12 +383,8 @@ const handleToggle = (value, homeoraway) => () => {
                             variation="quiet"
                             required              
                             inputStyles={textboxStyle} 
-                            onChange={(e) => fetchTeams(e.target.value, selectedSeason)}            
+                            onChange={(e) => fetchTeams(selectedSeason, e.target.value)}            
                             >
-                            <option value="Div A">Div A</option>
-                            <option value="Div B">Div B</option>
-                            <option value="PREM">PREM</option>
-                            <option value="COED">COED</option>
                         </SelectField>
                     </Flex>
         
@@ -420,7 +400,6 @@ const handleToggle = (value, homeoraway) => () => {
                         inputStyles={textboxStyle}
                         onChange={(e) => setHomeTeamVars(e.target.value)}
                         >                                   
-                        <option value="placeholder">placeholder</option>
                     </SelectField>
                     </Flex>
         
@@ -436,7 +415,6 @@ const handleToggle = (value, homeoraway) => () => {
                         inputStyles={textboxStyle}
                         onChange={(e) => setAwayTeamVars(e.target.value)}
                         >                                   
-                        <option value="placeholder">placeholder</option>
                     </SelectField>
                     </Flex>            
                             
@@ -695,6 +673,13 @@ const handleToggle = (value, homeoraway) => () => {
     }
 
     async function EndMatch(event) {
+        console.log(homeTeamGamesPlayed);
+        console.log(awayTeamGamesPlayed);
+        
+        var month = new Date().getUTCMonth() + 1;
+        var day = new Date().getUTCDate();
+        var year = new Date().getUTCFullYear();
+        var date = "" + year + "-" + month + "-" + day
         const data = {
             hometeam: selectedHomeTeam.teamname,
             awayteam: selectedAwayTeam.teamname,
@@ -703,7 +688,10 @@ const handleToggle = (value, homeoraway) => () => {
             season: selectedSeason,
             division: selectedDivision,
             year: new Date().getFullYear(),
-            referee: currentRef
+            referee: currentRef,
+            gamedate: date,
+            hometeamgamenumber: (homeTeamGamesPlayed+1),
+            awayteamgamenumber: (awayTeamGamesPlayed+1)
         };
             
         await API.graphql({

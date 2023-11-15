@@ -7,8 +7,7 @@
 /* eslint-disable */
 import * as React from "react";
 import { Button, Flex, Grid, TextField } from "@aws-amplify/ui-react";
-import { getOverrideProps } from "@aws-amplify/ui-react/internal";
-import { fetchByPath, validateField } from "./utils";
+import { fetchByPath, getOverrideProps, validateField } from "./utils";
 import { API } from "aws-amplify";
 import { getRefs } from "../graphql/queries";
 import { updateRefs } from "../graphql/mutations";
@@ -53,7 +52,7 @@ export default function RefsUpdateForm(props) {
       const record = idProp
         ? (
             await API.graphql({
-              query: getRefs,
+              query: getRefs.replaceAll("__typename", ""),
               variables: { id: idProp },
             })
           )?.data?.getRefs
@@ -129,7 +128,7 @@ export default function RefsUpdateForm(props) {
             }
           });
           await API.graphql({
-            query: updateRefs,
+            query: updateRefs.replaceAll("__typename", ""),
             variables: {
               input: {
                 id: refsRecord.id,

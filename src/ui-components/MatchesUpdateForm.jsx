@@ -7,8 +7,7 @@
 /* eslint-disable */
 import * as React from "react";
 import { Button, Flex, Grid, TextField } from "@aws-amplify/ui-react";
-import { getOverrideProps } from "@aws-amplify/ui-react/internal";
-import { fetchByPath, validateField } from "./utils";
+import { fetchByPath, getOverrideProps, validateField } from "./utils";
 import { API } from "aws-amplify";
 import { getMatches } from "../graphql/queries";
 import { updateMatches } from "../graphql/mutations";
@@ -33,6 +32,10 @@ export default function MatchesUpdateForm(props) {
     division: "",
     year: "",
     referee: "",
+    gamenumber: "",
+    hometeamgamenumber: "",
+    awayteamgamenumber: "",
+    gamedate: "",
   };
   const [hometeam, setHometeam] = React.useState(initialValues.hometeam);
   const [awayteam, setAwayteam] = React.useState(initialValues.awayteam);
@@ -46,6 +49,14 @@ export default function MatchesUpdateForm(props) {
   const [division, setDivision] = React.useState(initialValues.division);
   const [year, setYear] = React.useState(initialValues.year);
   const [referee, setReferee] = React.useState(initialValues.referee);
+  const [gamenumber, setGamenumber] = React.useState(initialValues.gamenumber);
+  const [hometeamgamenumber, setHometeamgamenumber] = React.useState(
+    initialValues.hometeamgamenumber
+  );
+  const [awayteamgamenumber, setAwayteamgamenumber] = React.useState(
+    initialValues.awayteamgamenumber
+  );
+  const [gamedate, setGamedate] = React.useState(initialValues.gamedate);
   const [errors, setErrors] = React.useState({});
   const resetStateValues = () => {
     const cleanValues = matchesRecord
@@ -59,6 +70,10 @@ export default function MatchesUpdateForm(props) {
     setDivision(cleanValues.division);
     setYear(cleanValues.year);
     setReferee(cleanValues.referee);
+    setGamenumber(cleanValues.gamenumber);
+    setHometeamgamenumber(cleanValues.hometeamgamenumber);
+    setAwayteamgamenumber(cleanValues.awayteamgamenumber);
+    setGamedate(cleanValues.gamedate);
     setErrors({});
   };
   const [matchesRecord, setMatchesRecord] = React.useState(matchesModelProp);
@@ -67,7 +82,7 @@ export default function MatchesUpdateForm(props) {
       const record = idProp
         ? (
             await API.graphql({
-              query: getMatches,
+              query: getMatches.replaceAll("__typename", ""),
               variables: { id: idProp },
             })
           )?.data?.getMatches
@@ -86,6 +101,10 @@ export default function MatchesUpdateForm(props) {
     division: [],
     year: [],
     referee: [],
+    gamenumber: [],
+    hometeamgamenumber: [],
+    awayteamgamenumber: [],
+    gamedate: [],
   };
   const runValidationTasks = async (
     fieldName,
@@ -121,6 +140,10 @@ export default function MatchesUpdateForm(props) {
           division: division ?? null,
           year: year ?? null,
           referee: referee ?? null,
+          gamenumber: gamenumber ?? null,
+          hometeamgamenumber: hometeamgamenumber ?? null,
+          awayteamgamenumber: awayteamgamenumber ?? null,
+          gamedate: gamedate ?? null,
         };
         const validationResponses = await Promise.all(
           Object.keys(validations).reduce((promises, fieldName) => {
@@ -151,7 +174,7 @@ export default function MatchesUpdateForm(props) {
             }
           });
           await API.graphql({
-            query: updateMatches,
+            query: updateMatches.replaceAll("__typename", ""),
             variables: {
               input: {
                 id: matchesRecord.id,
@@ -189,6 +212,10 @@ export default function MatchesUpdateForm(props) {
               division,
               year,
               referee,
+              gamenumber,
+              hometeamgamenumber,
+              awayteamgamenumber,
+              gamedate,
             };
             const result = onChange(modelFields);
             value = result?.hometeam ?? value;
@@ -220,6 +247,10 @@ export default function MatchesUpdateForm(props) {
               division,
               year,
               referee,
+              gamenumber,
+              hometeamgamenumber,
+              awayteamgamenumber,
+              gamedate,
             };
             const result = onChange(modelFields);
             value = result?.awayteam ?? value;
@@ -251,6 +282,10 @@ export default function MatchesUpdateForm(props) {
               division,
               year,
               referee,
+              gamenumber,
+              hometeamgamenumber,
+              awayteamgamenumber,
+              gamedate,
             };
             const result = onChange(modelFields);
             value = result?.hometeamscore ?? value;
@@ -282,6 +317,10 @@ export default function MatchesUpdateForm(props) {
               division,
               year,
               referee,
+              gamenumber,
+              hometeamgamenumber,
+              awayteamgamenumber,
+              gamedate,
             };
             const result = onChange(modelFields);
             value = result?.awayteamscore ?? value;
@@ -313,6 +352,10 @@ export default function MatchesUpdateForm(props) {
               division,
               year,
               referee,
+              gamenumber,
+              hometeamgamenumber,
+              awayteamgamenumber,
+              gamedate,
             };
             const result = onChange(modelFields);
             value = result?.season ?? value;
@@ -344,6 +387,10 @@ export default function MatchesUpdateForm(props) {
               division: value,
               year,
               referee,
+              gamenumber,
+              hometeamgamenumber,
+              awayteamgamenumber,
+              gamedate,
             };
             const result = onChange(modelFields);
             value = result?.division ?? value;
@@ -375,6 +422,10 @@ export default function MatchesUpdateForm(props) {
               division,
               year: value,
               referee,
+              gamenumber,
+              hometeamgamenumber,
+              awayteamgamenumber,
+              gamedate,
             };
             const result = onChange(modelFields);
             value = result?.year ?? value;
@@ -406,6 +457,10 @@ export default function MatchesUpdateForm(props) {
               division,
               year,
               referee: value,
+              gamenumber,
+              hometeamgamenumber,
+              awayteamgamenumber,
+              gamedate,
             };
             const result = onChange(modelFields);
             value = result?.referee ?? value;
@@ -419,6 +474,162 @@ export default function MatchesUpdateForm(props) {
         errorMessage={errors.referee?.errorMessage}
         hasError={errors.referee?.hasError}
         {...getOverrideProps(overrides, "referee")}
+      ></TextField>
+      <TextField
+        label="Gamenumber"
+        isRequired={false}
+        isReadOnly={false}
+        type="number"
+        step="any"
+        value={gamenumber}
+        onChange={(e) => {
+          let value = isNaN(parseInt(e.target.value))
+            ? e.target.value
+            : parseInt(e.target.value);
+          if (onChange) {
+            const modelFields = {
+              hometeam,
+              awayteam,
+              hometeamscore,
+              awayteamscore,
+              season,
+              division,
+              year,
+              referee,
+              gamenumber: value,
+              hometeamgamenumber,
+              awayteamgamenumber,
+              gamedate,
+            };
+            const result = onChange(modelFields);
+            value = result?.gamenumber ?? value;
+          }
+          if (errors.gamenumber?.hasError) {
+            runValidationTasks("gamenumber", value);
+          }
+          setGamenumber(value);
+        }}
+        onBlur={() => runValidationTasks("gamenumber", gamenumber)}
+        errorMessage={errors.gamenumber?.errorMessage}
+        hasError={errors.gamenumber?.hasError}
+        {...getOverrideProps(overrides, "gamenumber")}
+      ></TextField>
+      <TextField
+        label="Hometeamgamenumber"
+        isRequired={false}
+        isReadOnly={false}
+        type="number"
+        step="any"
+        value={hometeamgamenumber}
+        onChange={(e) => {
+          let value = isNaN(parseInt(e.target.value))
+            ? e.target.value
+            : parseInt(e.target.value);
+          if (onChange) {
+            const modelFields = {
+              hometeam,
+              awayteam,
+              hometeamscore,
+              awayteamscore,
+              season,
+              division,
+              year,
+              referee,
+              gamenumber,
+              hometeamgamenumber: value,
+              awayteamgamenumber,
+              gamedate,
+            };
+            const result = onChange(modelFields);
+            value = result?.hometeamgamenumber ?? value;
+          }
+          if (errors.hometeamgamenumber?.hasError) {
+            runValidationTasks("hometeamgamenumber", value);
+          }
+          setHometeamgamenumber(value);
+        }}
+        onBlur={() =>
+          runValidationTasks("hometeamgamenumber", hometeamgamenumber)
+        }
+        errorMessage={errors.hometeamgamenumber?.errorMessage}
+        hasError={errors.hometeamgamenumber?.hasError}
+        {...getOverrideProps(overrides, "hometeamgamenumber")}
+      ></TextField>
+      <TextField
+        label="Awayteamgamenumber"
+        isRequired={false}
+        isReadOnly={false}
+        type="number"
+        step="any"
+        value={awayteamgamenumber}
+        onChange={(e) => {
+          let value = isNaN(parseInt(e.target.value))
+            ? e.target.value
+            : parseInt(e.target.value);
+          if (onChange) {
+            const modelFields = {
+              hometeam,
+              awayteam,
+              hometeamscore,
+              awayteamscore,
+              season,
+              division,
+              year,
+              referee,
+              gamenumber,
+              hometeamgamenumber,
+              awayteamgamenumber: value,
+              gamedate,
+            };
+            const result = onChange(modelFields);
+            value = result?.awayteamgamenumber ?? value;
+          }
+          if (errors.awayteamgamenumber?.hasError) {
+            runValidationTasks("awayteamgamenumber", value);
+          }
+          setAwayteamgamenumber(value);
+        }}
+        onBlur={() =>
+          runValidationTasks("awayteamgamenumber", awayteamgamenumber)
+        }
+        errorMessage={errors.awayteamgamenumber?.errorMessage}
+        hasError={errors.awayteamgamenumber?.hasError}
+        {...getOverrideProps(overrides, "awayteamgamenumber")}
+      ></TextField>
+      <TextField
+        label="Gamedate"
+        isRequired={false}
+        isReadOnly={false}
+        value={gamedate}
+        onChange={(e) => {
+          let { value } = e.target;
+          if (onChange) {
+            const modelFields = {
+              hometeam,
+              awayteam,
+              hometeamscore,
+              awayteamscore,
+              season,
+              division,
+              year,
+              referee,
+              gamenumber,
+              hometeamgamenumber,
+              awayteamgamenumber,
+              gamedate: value,
+            };
+            const result = onChange(modelFields);
+            value = result?.gamedate ?? value;
+          }
+          if (errors.gamedate?.hasError) {
+            runValidationTasks("gamedate", value);
+          }
+          setGamedate(value);
+        }}
+        onBlur={() => runValidationTasks("gamedate", gamedate)}
+        errorMessage={errors.gamedate?.errorMessage}
+        hasError={errors.gamedate?.hasError}
+        {...getOverrideProps(overrides, "gamedate")}
       ></TextField>
       <Flex
         justifyContent="space-between"

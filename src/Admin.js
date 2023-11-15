@@ -36,6 +36,10 @@ import {
   createDivisions as createDivision
 } from "./graphql/mutations";
 
+import {
+  createRegisteredPlayers as createRegisteredPlayerMutation
+} from "./graphql/mutations";
+
 const Admin = ({ signOut }) => {
     const [value, setValue] = React.useState(0);
     const [playerRows, setPlayerRows] = React.useState([]);
@@ -63,7 +67,7 @@ const Admin = ({ signOut }) => {
       { field: "hometeamscore", headerName: "Home Team Score", width: 150 },
       { field: "awayteamscore", headerName: "Away Team Score", width: 150 },
       { field: "referee", headerName: "Referee", width: 150 },
-      { field: "updatedAt", headerName: "Game Date", width: 150 }
+      { field: "gamedate", headerName: "Game Date", width: 150 }
   ];
 
     const textboxStyle = {
@@ -77,7 +81,7 @@ const Admin = ({ signOut }) => {
 
     useEffect(() => {
         fetchPlayers();
-        fetchMatches();    
+        fetchMatches();
     }, []);
 
     function customCheckbox(theme) {
@@ -173,6 +177,11 @@ const Admin = ({ signOut }) => {
       const refName = response.data.listRefs.items[0].firstname + " " + response.data.listRefs.items[0].lastname;      
       return refName;      
     }
+
+    async function updateDivisions(season) {
+      setSelectedSeason(season);        
+      fetchDivisions(season);
+    }
     
     async function fetchPlayers() {
         API.graphql(graphqlOperation(queries.listRegisteredPlayers)).then(async (response) => {
@@ -229,8 +238,7 @@ const Admin = ({ signOut }) => {
     }            
 
     async function createMatchHistoryTable(matches) {
-      var allRows = [];
-
+      var allRows = [];      
       for (var i=0; i<matches.length;i++){
           var match = matches[i];
           var ref = await getReferee(match.referee);                
@@ -245,8 +253,7 @@ const Admin = ({ signOut }) => {
               hometeamscore: match.hometeamscore,
               awayteamscore: match.awayteamscore,
               referee: ref,
-              updatedAt: match.updatedAt.split("T")[0]
-
+              gamedate: match.gamedate
           }
 
           allRows.push(row);            
@@ -262,8 +269,10 @@ const Admin = ({ signOut }) => {
           (event.type === 'click' && samePageLinkNavigation(event))
         ) {
           setValue(newValue);
+
           if (newValue==5) {            
             fetchSeasons();
+            fetchDivisions();
           }   
           if (newValue==3) {            
             fetchSeasonsForDivision();
@@ -374,6 +383,29 @@ const Admin = ({ signOut }) => {
       });    
     }
 
+    async function fetchDivisions(season) {
+      var apiData = {};
+      if (season=="" || season==undefined) {
+          return;
+      }
+      else{            
+          apiData = await API.graphql(graphqlOperation(queries.listDivisions, { filter: { season: { eq: season }, year: { eq: new Date().getFullYear() }}}));
+      }
+      
+      const divisionsFromApi = apiData.data.listDivisions.items;
+        
+      createDivisions(divisionsFromApi);
+    }
+
+    function createDivisions(divisions){          
+      var str="<option value=0>SELECT DIVISION</option>";
+      for (var i = 0; i < divisions.length; i++){
+          var division = divisions[i];
+          str+="<option value=" + division.id + ">" + division.division + "</option>";      
+      }
+      document.getElementById("alldivisions").innerHTML = str;         
+    }
+
     async function fetchSeasonsForDivision() {
       API.graphql(graphqlOperation(listSeasons)).then((response) => {
         const seasonsFromAPI = response.data.listSeasons.items;            
@@ -385,7 +417,7 @@ const Admin = ({ signOut }) => {
       var str="<option value=0>SELECT SEASON</option>";
       for (var i = 0; i < seasons.length; i++){
         var season = seasons[i];
-        str+="<option value=" + season.season + ">" + season.season + "</option>";      
+        str+="<option value=" + season.id + ">" + season.season + " - " + season.year + "</option>";      
       }
       document.getElementById("allseasonsadd").innerHTML = str;
     } 
@@ -558,7 +590,7 @@ const Admin = ({ signOut }) => {
               </Flex>
 
               <Button type="submit" variation="primary">
-                ADD TEAM
+                ADD DIVISION
               </Button>
             </View>
           </div>
@@ -580,7 +612,7 @@ const Admin = ({ signOut }) => {
                   variation="quiet"
                   required
                   inputStyles={textboxStyle}
-                  onChange={(e) => setSelectedSeason(e.target.value)}           
+                  onChange={(e) => updateDivisions(e.target.value)}           
                   >                                   
                   <option value="placeholder">placeholder</option>
                 </SelectField>
@@ -597,10 +629,6 @@ const Admin = ({ signOut }) => {
                       required              
                       inputStyles={textboxStyle}                      
                       >
-                      <option value="Div A">Div A</option>
-                      <option value="Div B">Div B</option>
-                      <option value="PREM">PREM</option>
-                      <option value="COED">COED</option>
                   </SelectField>
               </Flex>         
 
@@ -677,7 +705,8 @@ const Admin = ({ signOut }) => {
       
       const data = {
         year: year,
-        season: season
+        season: season,
+        isseasonactive: true
       };    
     
       await API.graphql({
@@ -728,13 +757,32 @@ const Admin = ({ signOut }) => {
         year: new Date().getFullYear(),
         gamesplayed: 0
       };
-
-      console.log(data);      
-    
-      await API.graphql({
+                
+      var newTeam = await API.graphql({
         query: createTeam,
         variables: { input: data },
       });              
+      
+      var team = newTeam.data.createRegisteredTeams;      
+
+      const data2 = {
+        firstname: "Unassigned",
+        lastname: "Player",
+        teamname: team.teamname,
+        division: team.divison,
+        season: team.season,
+        position: "Striker",
+        email: "noemail@gmail.com",
+        teamid: team.id,
+        phonenumber: "613-111-1111",
+        year: new Date().getFullYear(),
+        onRoster: true
+      };            
+      
+      await API.graphql({
+        query: createRegisteredPlayerMutation,
+        variables: { input: data2 },
+      });
 
       alert("Team added succesfully");
 

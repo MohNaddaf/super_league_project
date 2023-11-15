@@ -6,7 +6,16 @@
 
 import * as React from "react";
 import { GridProps, TextFieldProps } from "@aws-amplify/ui-react";
-import { EscapeHatchProps } from "@aws-amplify/ui-react/internal";
+export declare type EscapeHatchProps = {
+    [elementHierarchy: string]: Record<string, unknown>;
+} | null;
+export declare type VariantValues = {
+    [key: string]: string;
+};
+export declare type Variant = {
+    variantValues: VariantValues;
+    overrides: EscapeHatchProps;
+};
 export declare type ValidationResponse = {
     hasError: boolean;
     errorMessage?: string;
@@ -21,6 +30,10 @@ export declare type MatchesUpdateFormInputValues = {
     division?: string;
     year?: string;
     referee?: string;
+    gamenumber?: number;
+    hometeamgamenumber?: number;
+    awayteamgamenumber?: number;
+    gamedate?: string;
 };
 export declare type MatchesUpdateFormValidationValues = {
     hometeam?: ValidationFunction<string>;
@@ -31,6 +44,10 @@ export declare type MatchesUpdateFormValidationValues = {
     division?: ValidationFunction<string>;
     year?: ValidationFunction<string>;
     referee?: ValidationFunction<string>;
+    gamenumber?: ValidationFunction<number>;
+    hometeamgamenumber?: ValidationFunction<number>;
+    awayteamgamenumber?: ValidationFunction<number>;
+    gamedate?: ValidationFunction<string>;
 };
 export declare type PrimitiveOverrideProps<T> = Partial<T> & React.DOMAttributes<HTMLDivElement>;
 export declare type MatchesUpdateFormOverridesProps = {
@@ -43,6 +60,10 @@ export declare type MatchesUpdateFormOverridesProps = {
     division?: PrimitiveOverrideProps<TextFieldProps>;
     year?: PrimitiveOverrideProps<TextFieldProps>;
     referee?: PrimitiveOverrideProps<TextFieldProps>;
+    gamenumber?: PrimitiveOverrideProps<TextFieldProps>;
+    hometeamgamenumber?: PrimitiveOverrideProps<TextFieldProps>;
+    awayteamgamenumber?: PrimitiveOverrideProps<TextFieldProps>;
+    gamedate?: PrimitiveOverrideProps<TextFieldProps>;
 } & EscapeHatchProps;
 export declare type MatchesUpdateFormProps = React.PropsWithChildren<{
     overrides?: MatchesUpdateFormOverridesProps | undefined | null;

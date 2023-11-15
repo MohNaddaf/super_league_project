@@ -58,6 +58,10 @@ export const onCreateMatches = /* GraphQL */ `
       division
       year
       referee
+      gamenumber
+      hometeamgamenumber
+      awayteamgamenumber
+      gamedate
       createdAt
       updatedAt
       __typename
@@ -76,6 +80,10 @@ export const onUpdateMatches = /* GraphQL */ `
       division
       year
       referee
+      gamenumber
+      hometeamgamenumber
+      awayteamgamenumber
+      gamedate
       createdAt
       updatedAt
       __typename
@@ -94,6 +102,10 @@ export const onDeleteMatches = /* GraphQL */ `
       division
       year
       referee
+      gamenumber
+      hometeamgamenumber
+      awayteamgamenumber
+      gamedate
       createdAt
       updatedAt
       __typename
@@ -107,6 +119,7 @@ export const onCreateSeasons = /* GraphQL */ `
       season
       year
       startdate
+      isseasonactive
       createdAt
       updatedAt
       __typename
@@ -120,6 +133,7 @@ export const onUpdateSeasons = /* GraphQL */ `
       season
       year
       startdate
+      isseasonactive
       createdAt
       updatedAt
       __typename
@@ -133,6 +147,7 @@ export const onDeleteSeasons = /* GraphQL */ `
       season
       year
       startdate
+      isseasonactive
       createdAt
       updatedAt
       __typename
@@ -206,6 +221,7 @@ export const onCreateRegisteredPlayers = /* GraphQL */ `
       totalcontributions
       year
       onRoster
+      suspendeduntilgamenumber
       createdAt
       updatedAt
       __typename
@@ -237,6 +253,7 @@ export const onUpdateRegisteredPlayers = /* GraphQL */ `
       totalcontributions
       year
       onRoster
+      suspendeduntilgamenumber
       createdAt
       updatedAt
       __typename
@@ -268,6 +285,7 @@ export const onDeleteRegisteredPlayers = /* GraphQL */ `
       totalcontributions
       year
       onRoster
+      suspendeduntilgamenumber
       createdAt
       updatedAt
       __typename

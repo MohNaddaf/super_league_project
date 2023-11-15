@@ -30,6 +30,7 @@ import ExpandMore from '@mui/icons-material/ExpandMore';
 import StarBorder from '@mui/icons-material/StarBorder';
 import Checkbox from '@mui/material/Checkbox';
 import ListItemButton from '@mui/material/ListItemButton';
+import * as mutations from "./graphql/mutations";
 
 const CalculateStats = ({ signOut }) => {
     const [selectedSeason, setSelectedSeason] = useState("");
@@ -134,40 +135,35 @@ const CalculateStats = ({ signOut }) => {
     async function fetchDivisions(season) {
         var apiData = {};
         if (season=="" || season==undefined) {
-            apiData = await API.graphql(graphqlOperation(queries.listRegisteredTeams));
+          return;
         }
         else{            
-            apiData = await API.graphql(graphqlOperation(queries.listRegisteredTeams, { filter: { season: { eq: season }}}));
+          apiData = await API.graphql(graphqlOperation(queries.listDivisions, { filter: { season: { eq: season }, year: { eq: new Date().getFullYear() }}}));
         }
         
-        const teamsFromAPI = apiData.data.listRegisteredTeams.items;
-        var divs = [];
-        for (var i=0; i<teamsFromAPI.length;i++) {
-            if (divs.includes(teamsFromAPI[i].divison) == false) {
-                divs.push(teamsFromAPI[i].divison);
-            }
-        }
-
-        createDivisions(divs);
-    }
+        const divisionsFromApi = apiData.data.listDivisions.items;
+    
+        createDivisions(divisionsFromApi);
+      }
 
     function createSeasons(seasons){    
         var str="<option value=0>SELECT SEASON</option>";
         for (var i = 0; i < seasons.length; i++){
             var season = seasons[i];
-            str+="<option value=" + season.season + ">" + season.season + "</option>";      
+            str+="<option value=" + season.id + ">" + season.season + " - " + season.year + "</option>";      
         }
         document.getElementById("allseasons").innerHTML = str;         
     }
+
 
     function createDivisions(divisions){    
         var str="<option value=0>SELECT DIVISION</option>";
         for (var i = 0; i < divisions.length; i++){
             var division = divisions[i];
-            str+="<option value=\"" + division + "\">" + division + "</option>";      
+            str+="<option value=" + division.id + ">" + division.division + "</option>";      
         }
         document.getElementById("alldivisions").innerHTML = str;         
-    }
+      }
 
     async function updateDivisions(season) {
         setSelectedSeason(season);        
@@ -370,7 +366,6 @@ const CalculateStats = ({ signOut }) => {
                         inputStyles={textboxStyle}
                         onChange={(e) => updateDivisions(e.target.value)}
                         >                                   
-                        <option value="placeholder">placeholder</option>
                     </SelectField>
                 </Flex>
 
@@ -386,10 +381,6 @@ const CalculateStats = ({ signOut }) => {
                         inputStyles={textboxStyle}
                         onChange={(e) => setSelectedDivision(e.target.value)}
                         >
-                        <option value="Div A">Div A</option>
-                        <option value="Div B">Div B</option>
-                        <option value="PREM">PREM</option>
-                        <option value="COED">COED</option>
                     </SelectField>
                 </Flex>          
 

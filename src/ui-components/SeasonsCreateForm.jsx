@@ -6,9 +6,14 @@
 
 /* eslint-disable */
 import * as React from "react";
-import { Button, Flex, Grid, TextField } from "@aws-amplify/ui-react";
-import { getOverrideProps } from "@aws-amplify/ui-react/internal";
-import { fetchByPath, validateField } from "./utils";
+import {
+  Button,
+  Flex,
+  Grid,
+  SwitchField,
+  TextField,
+} from "@aws-amplify/ui-react";
+import { fetchByPath, getOverrideProps, validateField } from "./utils";
 import { API } from "aws-amplify";
 import { createSeasons } from "../graphql/mutations";
 export default function SeasonsCreateForm(props) {
@@ -26,21 +31,27 @@ export default function SeasonsCreateForm(props) {
     season: "",
     year: "",
     startdate: "",
+    isseasonactive: false,
   };
   const [season, setSeason] = React.useState(initialValues.season);
   const [year, setYear] = React.useState(initialValues.year);
   const [startdate, setStartdate] = React.useState(initialValues.startdate);
+  const [isseasonactive, setIsseasonactive] = React.useState(
+    initialValues.isseasonactive
+  );
   const [errors, setErrors] = React.useState({});
   const resetStateValues = () => {
     setSeason(initialValues.season);
     setYear(initialValues.year);
     setStartdate(initialValues.startdate);
+    setIsseasonactive(initialValues.isseasonactive);
     setErrors({});
   };
   const validations = {
     season: [],
     year: [],
     startdate: [],
+    isseasonactive: [],
   };
   const runValidationTasks = async (
     fieldName,
@@ -71,6 +82,7 @@ export default function SeasonsCreateForm(props) {
           season,
           year,
           startdate,
+          isseasonactive,
         };
         const validationResponses = await Promise.all(
           Object.keys(validations).reduce((promises, fieldName) => {
@@ -101,7 +113,7 @@ export default function SeasonsCreateForm(props) {
             }
           });
           await API.graphql({
-            query: createSeasons,
+            query: createSeasons.replaceAll("__typename", ""),
             variables: {
               input: {
                 ...modelFields,
@@ -136,6 +148,7 @@ export default function SeasonsCreateForm(props) {
               season: value,
               year,
               startdate,
+              isseasonactive,
             };
             const result = onChange(modelFields);
             value = result?.season ?? value;
@@ -162,6 +175,7 @@ export default function SeasonsCreateForm(props) {
               season,
               year: value,
               startdate,
+              isseasonactive,
             };
             const result = onChange(modelFields);
             value = result?.year ?? value;
@@ -189,6 +203,7 @@ export default function SeasonsCreateForm(props) {
               season,
               year,
               startdate: value,
+              isseasonactive,
             };
             const result = onChange(modelFields);
             value = result?.startdate ?? value;
@@ -203,6 +218,33 @@ export default function SeasonsCreateForm(props) {
         hasError={errors.startdate?.hasError}
         {...getOverrideProps(overrides, "startdate")}
       ></TextField>
+      <SwitchField
+        label="Isseasonactive"
+        defaultChecked={false}
+        isDisabled={false}
+        isChecked={isseasonactive}
+        onChange={(e) => {
+          let value = e.target.checked;
+          if (onChange) {
+            const modelFields = {
+              season,
+              year,
+              startdate,
+              isseasonactive: value,
+            };
+            const result = onChange(modelFields);
+            value = result?.isseasonactive ?? value;
+          }
+          if (errors.isseasonactive?.hasError) {
+            runValidationTasks("isseasonactive", value);
+          }
+          setIsseasonactive(value);
+        }}
+        onBlur={() => runValidationTasks("isseasonactive", isseasonactive)}
+        errorMessage={errors.isseasonactive?.errorMessage}
+        hasError={errors.isseasonactive?.hasError}
+        {...getOverrideProps(overrides, "isseasonactive")}
+      ></SwitchField>
       <Flex
         justifyContent="space-between"
         {...getOverrideProps(overrides, "CTAFlex")}
