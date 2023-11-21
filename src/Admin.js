@@ -19,7 +19,7 @@ import { alpha, styled } from '@mui/material/styles';
 import { API, graphqlOperation} from "aws-amplify";
 import { Dimensions } from "react-native";
 import { listSeasons } from "./graphql/queries";
-
+import { Auth } from 'aws-amplify'
 import {
   createRefs as createReferee
 } from "./graphql/mutations";
@@ -451,6 +451,10 @@ const Admin = ({ signOut }) => {
       );
     }    
 
+    function logOut() {
+      Auth.signOut();
+    }
+
     function manageRefView() {
       return (
         <div className="Referee">
@@ -793,18 +797,19 @@ const Admin = ({ signOut }) => {
         return (
             <div>
                 <Box className="Refereee" sx={{ width: '100%', backgroundColor: 'orange', margin:'' }}>
-                    <Tabs value={value} onChange={handleChange} aria-label="nav tabs example">
-                        <LinkTab  label="Calculate Player Stats"/>
+                    <Tabs value={value} onChange={handleChange} aria-label="nav tabs example">                        
+                        <LinkTab label="Calculate Player Stats"/>
                         <LinkTab label="Remove Players"/>
                         <LinkTab label="Add Season"/>
                         <LinkTab label="Add Division"/>
                         <LinkTab label="Add Referees"/>
                         <LinkTab label="Add Team"/>
                         <LinkTab label="Match History"/>
+                        <LinkTab label="Log Out"/>                        
                     </Tabs>
                 </Box>
                 
-                {value == 0 ? <CalculateStats/> : value == 1 ? removePlayersView() : value == 2 ? addSeasonView() : value == 3 ? addDivisionView() : value == 4 ? manageRefView() : value == 5 ? addTeamView() : matchHistoryView()}              
+                {value == 0 ? <CalculateStats/> : value == 1 ? removePlayersView() : value == 2 ? addSeasonView() : value == 3 ? addDivisionView() : value == 4 ? manageRefView() : value == 5 ? addTeamView() : value == 6 ? matchHistoryView() : logOut()}              
             </div>
         );
     }

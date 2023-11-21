@@ -22,6 +22,7 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Checkbox from '@mui/material/Checkbox';
 import { Dimensions } from "react-native"
+import { Auth } from 'aws-amplify'
 
 const Referee = ({ signOut }) => {
 const [teams, setTeams] = useState([]);
@@ -417,14 +418,22 @@ const handleToggle = (value, homeoraway) => () => {
                         >                                   
                     </SelectField>
                     </Flex>            
-                            
-        
+                                            
                     <Button type="submit" variation="primary">
                     Begin Refereeing
-                    </Button>
-                </View>                        
+                    </Button>                                        
+                </View>
+                    <Flex direction="row" justifyContent="center" >
+                        <Button style={{backgroundColor: 'red'}} onClick={signOut} type="submit" variation="primary">
+                        Log Out
+                        </Button>
+                    </Flex>
             </View>
           );
+    }
+
+    function signOut() {
+        Auth.signOut();
     }
 
     function setPlayerStatsGameStart(players, gamesplayed, isHomeTeam) {
