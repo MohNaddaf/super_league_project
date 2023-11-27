@@ -618,7 +618,6 @@ const Admin = ({ signOut }) => {
                   inputStyles={textboxStyle}
                   onChange={(e) => updateDivisions(e.target.value)}           
                   >                                   
-                  <option value="placeholder">placeholder</option>
                 </SelectField>
               </Flex>
 

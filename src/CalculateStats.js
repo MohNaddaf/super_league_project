@@ -35,13 +35,21 @@ import * as mutations from "./graphql/mutations";
 const CalculateStats = ({ signOut }) => {
     const [selectedSeason, setSelectedSeason] = useState("");
     const [selectedDivision, setSelectedDivision] = useState("");
+    const [selectedSeasonFull, setSelectedSeasonFull] = useState("");
+    const [selectedDivisionFull, setSelectedDivisionFull] = useState("");
     const [selectedGameNumber, setSelectedGameNumber] = useState("");
     const [selectedNumPlayers, setSelectedNumPlayers] = useState("");
     const [topGoalScorers, setTopGoalScorers] = useState([]);
     const [topPlayersForWeek, setTopPlayersForWeek] = useState([]);
+    const [topKeepersForWeek, setTopKeepersForWeek] = useState([]);
+    const [topKeepersUntilWeek, setTopKeepersUntilWeek] = useState([]);
     const [topPlayersForPositionForWeek, setTopPlayersForPositionForWeek] = useState({});
     const [allPositions, setAllPositions] = useState(["Center back / Defense", "Center Midfield", "Right Midfield", "Left Midfield", "Striker"]);
     const [allChecked, setAllChecked] = React.useState([]);
+    const [allTopKeepersOfWeek, setAllTopKeepersOfWeek] = React.useState([]);
+    const [allTopKeepersOfWeekPlayers, setAllTopKeepersOfWeekPlayers] = React.useState([]);
+    const [allTopKeepersUntilWeek, setAllTopKeepersUntilWeek] = React.useState([]);
+    const [allTopKeepersUntilWeekPlayers, setAllTopKeepersUntilWeekPlayers] = React.useState([]);
     const [allTopPlayersOfWeek, setAllTopPlayersOfWeek] = React.useState([]);
     const [allTopGoalScorers, setAllTopGoalScorers] = React.useState([]);
     const [allCheckedPlayers, setAllCheckedPlayers] = React.useState([]);
@@ -60,6 +68,46 @@ const CalculateStats = ({ signOut }) => {
     };
 
     const divStyle = {marginRight: '1rem', marginLeft: '1rem', alignItems:'left', textAlign:'left'}
+
+    const handleTopKeepersUntilWeek = (value, player) => () => {        
+        var newObject = allTopKeepersUntilWeek;
+        var newObject1 = allTopKeepersUntilWeekPlayers;
+
+        if (newObject.includes(value)) {
+            var index = newObject.indexOf(value);
+            newObject.splice(index,1);
+
+            var index1 = newObject1.indexOf(player);
+            newObject1.splice(index1,1);
+        }
+        else{
+            newObject.push(value);
+            newObject1.push(player);
+        }
+        setAllTopKeepersUntilWeek(newObject);
+        setAllTopKeepersUntilWeekPlayers(newObject1);
+        forceUpdate();
+    };
+
+    const handleTopKeepersOfWeek = (value, player) => () => {        
+        var newObject = allTopKeepersOfWeek;
+        var newObject1 = allTopKeepersOfWeekPlayers;
+
+        if (newObject.includes(value)) {
+            var index = newObject.indexOf(value);
+            newObject.splice(index,1);
+
+            var index1 = newObject1.indexOf(player);
+            newObject1.splice(index1,1);
+        }
+        else{
+            newObject.push(value);
+            newObject1.push(player);
+        }
+        setAllTopKeepersOfWeek(newObject);
+        setAllTopKeepersOfWeekPlayers(newObject1);
+        forceUpdate();
+    };
 
     const handleTopPlayersOfWeek = (value, player) => () => {        
         var newObject = allTopPlayersOfWeek;
@@ -172,6 +220,24 @@ const CalculateStats = ({ signOut }) => {
 
     function computeStatistics() {   
         fetchPlayers();
+        fetchMatches();
+        fetchMatchesUntilWeek();
+        fetchSeasonDivisionNames();
+    }
+
+    async function fetchSeasonDivisionNames() {
+        var seasonRetrieved = await API.graphql({
+            query: queries.getSeasons,
+            variables: { id: selectedSeason }
+        });
+
+        var divisionRetrieved = await API.graphql({
+            query: queries.getDivisions,
+            variables: { id: selectedDivision }
+        });
+
+        setSelectedSeasonFull(seasonRetrieved.data.getSeasons);
+        setSelectedDivisionFull(divisionRetrieved.data.getDivisions);        
     }
 
     function generateReport() {
@@ -195,6 +261,70 @@ const CalculateStats = ({ signOut }) => {
 
         setGenerateReportClicked(true);
     }
+
+    async function calculateTopKeepersForWeek(matches) {
+        var topKeepers = [];                
+
+        for (var i=0;i<matches.length;i++){
+            var match=matches[i];
+
+
+            if (match.hometeamgamenumber==selectedGameNumber) {                
+                var results = await API.graphql(graphqlOperation(queries.listRegisteredPlayers, {filter: {season: { eq: selectedSeason }, division: { eq: selectedDivision }, position: {eq: "Keeper"}, teamname: {eq: match.hometeam}}}));                
+                
+                var keepers = results.data.listRegisteredPlayers.items;
+                
+                var token = results.data.listRegisteredPlayers.nextToken;
+            
+
+                while (token!=null) {
+                    var results2 = await API.graphql(graphqlOperation(queries.listRegisteredPlayers, {nextToken: token, filter: {season: { eq: selectedSeason }, division: { eq: selectedDivision }, position: {eq: "Keeper"}, teamname: {eq: match.hometeam}}}));                
+                    keepers.push.apply(keepers, results2.data.listRegisteredPlayers.items);
+                    token = results2.data.listRegisteredPlayers.nextToken;
+                }
+                
+                if (keepers.length>0) {
+                    var keeper = keepers[0];
+                    var person = {id: keeper.id, firstName: keeper.firstname, lastName:keeper.lastname, teamName:keeper.teamname, concededGoals: match.awayteamscore};
+                    topKeepers.push(person);
+                }            
+            }
+            
+
+            if (match.awayteamgamenumber==selectedGameNumber) {
+                var results = await API.graphql(graphqlOperation(queries.listRegisteredPlayers, {filter: {season: { eq: selectedSeason }, division: { eq: selectedDivision }, position: {eq: "Keeper"}, teamname: {eq: match.awayteam}}}));                
+                
+                var keepers = results.data.listRegisteredPlayers.items;
+
+                var token = results.data.listRegisteredPlayers.nextToken;
+            
+                while (token!=null) {
+                    var results = await API.graphql(graphqlOperation(queries.listRegisteredPlayers, {nextToken: token, filter: {season: { eq: selectedSeason }, division: { eq: selectedDivision }, position: {eq: "Keeper"}, teamname: {eq: match.awayteam}}}));                
+                    keepers.push.apply(keepers, results.data.listRegisteredPlayers.items);
+                    token = results.data.listRegisteredPlayers.nextToken;
+                }
+
+                if (keepers.length>0) {
+                    var keeper = keepers[0];
+                    var person = {id: keeper.id, firstName: keeper.firstname, lastName:keeper.lastname, teamName:keeper.teamname, concededGoals: match.hometeamscore};
+                    topKeepers.push(person);
+                }   
+            }            
+        }                        
+        
+        //sort all player goals highest to lowest
+        topKeepers.sort(function(a, b) {
+            var keyA = a.concededGoals,
+                keyB = b.concededGoals;
+            
+            if (keyA < keyB) return -1;
+            if (keyA > keyB) return 1;
+            return 0;
+        });
+
+        setTopKeepersForWeek(topKeepers.slice(0, selectedNumPlayers));      
+    }
+
 
     function calculateTopPlayersForWeek(players) {
         var topPlayers = [];                
@@ -333,7 +463,7 @@ const CalculateStats = ({ signOut }) => {
         setTopGoalScorers(topScorers.slice(0, selectedNumPlayers));              
     }
 
-    async function fetchPlayers() {            
+    async function fetchPlayers() {
         API.graphql(graphqlOperation(queries.listRegisteredPlayers, { filter: {season: { eq: selectedSeason }, division: { eq: selectedDivision }}})).then(async (response) => {
             const playersFromAPI = response.data.listRegisteredPlayers.items;
 
@@ -348,7 +478,101 @@ const CalculateStats = ({ signOut }) => {
             calculateTopPlayersForWeek(playersFromAPI);
             calculateTopGoalScorers(playersFromAPI);
             calculateTopPlayersForEachPositionForWeek(playersFromAPI);
-        });          
+        });        
+    }
+
+    async function fetchMatches() {
+        API.graphql(graphqlOperation(queries.listMatches, { filter: {season: { eq: selectedSeason }, division: { eq: selectedDivision }, or:{hometeamgamenumber: { eq: selectedGameNumber }, awayteamgamenumber: { eq: selectedGameNumber }}}})).then(async (response) => {
+            const teamsFromApi = response.data.listMatches.items;
+
+            var token = response.data.listMatches.nextToken;
+            
+            while (token!=null) {
+                var results = await API.graphql(graphqlOperation(queries.listMatches, {nextToken:token, filter: {season: { eq: selectedSeason }, division: { eq: selectedDivision }, or: {hometeamgamenumber: { eq: selectedGameNumber }, awayteamgamenumber: { eq: selectedGameNumber }}}}));                
+                teamsFromApi.push.apply(teamsFromApi, results.data.listMatches.items);
+                token = results.data.listMatches.nextToken;
+            }
+            
+            calculateTopKeepersForWeek(teamsFromApi);
+        });    
+    }
+
+    async function calculateTopKeepersUntilWeek(matches) {                
+
+        var teamMap = new Map();
+        var topKeepers = [];                
+
+        for (var i=0;i<matches.length;i++){
+            var match=matches[i];
+
+            if (match.hometeamgamenumber<=selectedGameNumber) {
+                if (teamMap.has(match.hometeam)){
+                    var currentGoals = parseInt(teamMap.get(match.hometeam));
+                    teamMap.set(match.hometeam, (currentGoals + parseInt(match.awayteamscore)));
+                }
+                else{
+                    teamMap.set(match.hometeam, parseInt(match.awayteamscore));
+                }                     
+            }
+            
+            if (match.awayteamgamenumber<=selectedGameNumber) {
+                if (teamMap.has(match.awayteam)){
+                    var currentGoals = parseInt(teamMap.get(match.awayteam));
+                    teamMap.set(match.awayteam, (currentGoals + parseInt(match.hometeamscore)));
+                }
+                else{
+                    teamMap.set(match.awayteam, parseInt(match.hometeamscore));
+                }
+            }            
+        }      
+        
+        for (let [key, value] of teamMap) {            
+            var results = await API.graphql(graphqlOperation(queries.listRegisteredPlayers, {filter: {season: { eq: selectedSeason }, division: { eq: selectedDivision }, position: {eq: "Keeper"}, teamname: {eq: key}}}));                
+                
+            var keepers = results.data.listRegisteredPlayers.items;
+
+            var token = results.data.listRegisteredPlayers.nextToken;
+        
+            while (token!=null) {
+                var results = await API.graphql(graphqlOperation(queries.listRegisteredPlayers, {nextToken: token, filter: {season: { eq: selectedSeason }, division: { eq: selectedDivision }, position: {eq: "Keeper"}, teamname: {eq: key}}}));                
+                keepers.push.apply(keepers, results.data.listRegisteredPlayers.items);
+                token = results.data.listRegisteredPlayers.nextToken;
+            }
+
+            if (keepers.length>0) {
+                var keeper = keepers[0];
+                var person = {id: keeper.id, firstName: keeper.firstname, lastName:keeper.lastname, teamName:keeper.teamname, concededGoals: value};
+                topKeepers.push(person);
+            }
+        }
+        
+        topKeepers.sort(function(a, b) {
+            var keyA = a.concededGoals,
+                keyB = b.concededGoals;
+            
+            if (keyA < keyB) return -1;
+            if (keyA > keyB) return 1;
+            return 0;
+        });
+
+        setTopKeepersUntilWeek(topKeepers.slice(0, selectedNumPlayers));                
+    }
+
+    async function fetchMatchesUntilWeek() {
+
+        API.graphql(graphqlOperation(queries.listMatches, { filter: {season: { eq: selectedSeason }, division: { eq: selectedDivision }, or:{hometeamgamenumber: { le: selectedGameNumber }, awayteamgamenumber: { le: selectedGameNumber }}}})).then(async (response) => {
+            const teamsFromApi = response.data.listMatches.items;
+
+            var token = response.data.listMatches.nextToken;
+            
+            while (token!=null) {
+                var results = await API.graphql(graphqlOperation(queries.listMatches, {nextToken:token, filter: {season: { eq: selectedSeason }, division: { eq: selectedDivision }, or: {hometeamgamenumber: { le: selectedGameNumber }, awayteamgamenumber: { le: selectedGameNumber }}}}));                
+                teamsFromApi.push.apply(teamsFromApi, results.data.listMatches.items);
+                token = results.data.listMatches.nextToken;
+            }
+            
+            calculateTopKeepersUntilWeek(teamsFromApi);
+        });        
     }
 
     function calcStats() {          
@@ -414,8 +638,55 @@ const CalculateStats = ({ signOut }) => {
                 Calculate Statistics
                 </Button>
                 
-                <Flex direction="row" justifyContent="center" margin={"3rem"} inputStyles={textboxStyle}>             
-                    <List sx={{ width: '100%', maxWidth: Dimensions.get('window').width/4, bgcolor: 'background.paper' }} subheader={<ListSubheader style={hStyle} component="div" id="top-5-players-for-week-subheader">Most Contributions For Week {selectedGameNumber}</ListSubheader>}>
+                <Flex direction="row" justifyContent="center" margin={"3rem"} inputStyles={textboxStyle}>
+
+                <List sx={{ width: '100%', maxWidth: Dimensions.get('window').width/5, bgcolor: 'background.paper' }} subheader={<ListSubheader style={hStyle} component="div" id="top-5-players-for-week-subheader">Top Keepers for Week {selectedGameNumber}</ListSubheader>}>
+                        {topKeepersForWeek.map((value) => {
+                            return (
+                                <ListItem>
+                                    <ListItemButton role={undefined} onClick={handleTopKeepersOfWeek(value.id, value)} dense>
+                                        <Checkbox
+                                            edge="start"
+                                            checked={allTopKeepersOfWeek.indexOf(value.id)!=-1}
+                                            tabIndex={-1}
+                                            disableRipple                                                        
+                                        />
+                                        <ListItemAvatar>
+                                        <Avatar>
+                                            <PersonIcon />
+                                        </Avatar>
+                                        </ListItemAvatar>
+                                        <ListItemText primary={`${value.firstName} ${value.lastName} with ${value.concededGoals} conceded goals `} secondary={`${value.teamName}`} />
+                                    </ListItemButton>
+                                </ListItem>
+                            );
+                        })}
+                    </List>
+
+                <List sx={{ width: '100%', maxWidth: Dimensions.get('window').width/5, bgcolor: 'background.paper' }} subheader={<ListSubheader style={hStyle} component="div" id="top-5-players-for-week-subheader">Top Keepers Until Week {selectedGameNumber}</ListSubheader>}>
+                        {topKeepersUntilWeek.map((value) => {
+                            return (
+                                <ListItem>
+                                    <ListItemButton role={undefined} onClick={handleTopKeepersUntilWeek(value.id, value)} dense>
+                                        <Checkbox
+                                            edge="start"
+                                            checked={allTopKeepersUntilWeek.indexOf(value.id)!=-1}
+                                            tabIndex={-1}
+                                            disableRipple                                                        
+                                        />
+                                        <ListItemAvatar>
+                                        <Avatar>
+                                            <PersonIcon />
+                                        </Avatar>
+                                        </ListItemAvatar>
+                                        <ListItemText primary={`${value.firstName} ${value.lastName} with ${value.concededGoals} conceded goals`} secondary={`${value.teamName}`} />
+                                    </ListItemButton>
+                                </ListItem>
+                            );
+                        })}
+                    </List>
+
+                    <List sx={{ width: '100%', maxWidth: Dimensions.get('window').width/5, bgcolor: 'background.paper' }} subheader={<ListSubheader style={hStyle} component="div" id="top-5-players-for-week-subheader">Most Contributions For Week {selectedGameNumber}</ListSubheader>}>
                         {topPlayersForWeek.map((value) => {
                             return (
                                 <ListItem>
@@ -438,7 +709,7 @@ const CalculateStats = ({ signOut }) => {
                         })}
                     </List>
 
-                    <List sx={{ width: '100%', maxWidth: Dimensions.get('window').width/4, bgcolor: 'background.paper' }} subheader={<ListSubheader style={hStyle} component="div" id="top-5-goal-scorers-for-week-subheader">Most Contributions Per Position for Week {selectedGameNumber}</ListSubheader>}>
+                    <List sx={{ width: '100%', maxWidth: Dimensions.get('window').width/5, bgcolor: 'background.paper' }} subheader={<ListSubheader style={hStyle} component="div" id="top-5-goal-scorers-for-week-subheader">Most Contributions Per Position for Week {selectedGameNumber}</ListSubheader>}>
                         {allPositions.map((value) => {
                             return (
                                 <>
@@ -475,7 +746,7 @@ const CalculateStats = ({ signOut }) => {
                         })}
                     </List>
 
-                    <List sx={{ width: '100%', maxWidth: Dimensions.get('window').width/4, bgcolor: 'background.paper' }} subheader={<ListSubheader style={hStyle} component="div" id="top-5-goal-scorers-subheader">Top Goal Scorers Until Week {selectedGameNumber}</ListSubheader>}>
+                    <List sx={{ width: '100%', maxWidth: Dimensions.get('window').width/5, bgcolor: 'background.paper' }} subheader={<ListSubheader style={hStyle} component="div" id="top-5-goal-scorers-subheader">Top Goal Scorers Until Week {selectedGameNumber}</ListSubheader>}>
                         {topGoalScorers.map((value) => {
                             return (
                                 <ListItem>
@@ -520,11 +791,29 @@ const CalculateStats = ({ signOut }) => {
         );
     }
 
+    function displayTopKeeper(){
+        return (
+            allTopKeepersOfWeekPlayers.map((player) => {
+                return (
+                    <li><b>Keeper: </b> {player.firstName} {player.lastName} - {player.teamName}</li>
+                )
+        }));
+    }
+
     function displayPlayerOfTheWeek(){
         return (
             allTopPlayersOfWeekPlayers.map((player) => {
                 return (
                     <li>{player.firstName} {player.lastName} - {player.teamName} ({player.goals} goals + {player.assists} assists)</li>
+                )
+        }));
+    }
+
+    function displayKeeperOfTheWeek(){
+        return (
+            allTopKeepersOfWeekPlayers.map((player) => {
+                return (
+                    <li>{player.firstName} {player.lastName} - {player.teamName} ({player.concededGoals} conceded goals)</li>
                 )
         }));
     }
@@ -538,17 +827,26 @@ const CalculateStats = ({ signOut }) => {
         }));
     }
 
+    function displayTopKeepers(){
+        return (
+            allTopKeepersUntilWeekPlayers.map((player) => {
+                return (
+                    <li>{player.firstName} {player.lastName} with {player.concededGoals} conceded goals - {player.teamName}</li>
+                )
+        }));
+    }
+
     function displayReport() {          
         return (
             <View className="Referee">
                 
                 <Flex direction="row" justifyContent="center" alignItems="left">
-                    <h1 style={hStyle}>{selectedSeason} - {selectedDivision}</h1> 
+                    <h1 style={hStyle}>{selectedSeasonFull.season} - {selectedDivisionFull.division}</h1> 
                 </Flex>
 
                 <Flex direction="row" justifyContent="left" alignItems="left" margin={'1rem'}>
                     <div style={divStyle}>
-                        <h4 style={hStyle}>{selectedDivision} - Week {selectedGameNumber}</h4>
+                        <h4 style={hStyle}>{selectedDivisionFull.division} - Week {selectedGameNumber}</h4>
                     </div>
                 </Flex>
 
@@ -557,6 +855,7 @@ const CalculateStats = ({ signOut }) => {
                     <h4 style={hStyle}>Week {selectedGameNumber} TOTW:</h4>
                         <ul style={hStyle}>
                             {displayTopPlayersFromEachPosition()}
+                            {displayTopKeeper()}
                         </ul>
                     </div>
                 </Flex>
@@ -572,9 +871,27 @@ const CalculateStats = ({ signOut }) => {
 
                 <Flex direction="row" justifyContent="left" alignItems="left" margin={'1rem'}>
                     <div style={divStyle}>
+                    <h4 style={hStyle}>Keeper of the week:</h4>
+                        <ul style={hStyle}>
+                            {displayKeeperOfTheWeek()}
+                        </ul>
+                    </div>
+                </Flex>
+
+                <Flex direction="row" justifyContent="left" alignItems="left" margin={'1rem'}>
+                    <div style={divStyle}>
                     <h4 style={hStyle}>Top Goalscorers:</h4>
                         <ul style={hStyle}>
                             {displayTopGoalScorers()}
+                        </ul>
+                    </div>
+                </Flex>
+
+                <Flex direction="row" justifyContent="left" alignItems="left" margin={'1rem'}>
+                    <div style={divStyle}>
+                    <h4 style={hStyle}>Top Keepers:</h4>
+                        <ul style={hStyle}>
+                            {displayTopKeepers()}
                         </ul>
                     </div>
                 </Flex>
