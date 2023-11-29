@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useReducer} from "react";
 import "./Referee.css";
 import "@aws-amplify/ui-react/styles.css";
 import {
@@ -6,6 +6,7 @@ import {
   Flex,
   View,
   TextField,
+  Heading,
   SelectField
 } from "@aws-amplify/ui-react";
 import * as queries from "./graphql/queries";
@@ -20,6 +21,13 @@ import { API, graphqlOperation} from "aws-amplify";
 import { Dimensions } from "react-native";
 import { listSeasons } from "./graphql/queries";
 import { Auth } from 'aws-amplify'
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemButton from '@mui/material/ListItemButton';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import Checkbox from '@mui/material/Checkbox';
+
 import {
   createRefs as createReferee
 } from "./graphql/mutations";
@@ -44,8 +52,21 @@ const Admin = ({ signOut }) => {
     const [value, setValue] = React.useState(0);
     const [playerRows, setPlayerRows] = React.useState([]);
     const [matchRows, setMatchRows] = React.useState([]);
-    const [selectedSeason, setSelectedSeason] = useState("");
-    
+    const [selectedSeason, setSelectedSeason] = useState("");    
+    const [currentGoals, setCurrentGoals] = useState(0);
+    const [currentAssists, setCurrentAssists] = useState(0);
+    const [currentHomeTeamScore, setCurrentHomeTeamScore] = useState(0);
+    const [currentAwayTeamScore, setCurrentAwayTeamScore] = useState(0);
+    const [playerID, setPlayerID] = useState("");
+    const [selectedPlayer, setSelectedPlayer] = useState({});
+    const [homeTeamPlayers, setHomeTeamPlayers] = useState([]);
+    const [awayTeamPlayers, setAwayTeamPlayers] = useState([]);
+    const [selectedMatch, setSelectedMatch] = useState("");
+    const [homeTeamName, setHomeTeamName] = useState("");
+    const [awayTeamName, setAwayTeamName] = useState("");
+    const [homeOrAway, setHomeOrAway] = useState("");
+    const [, forceUpdate] = useReducer(x => x + 1, 0);
+
     const playerColumns = [
         { field: "id", hide: true },
         { field: "fname", headerName: "First Name", width: 150 },
@@ -70,12 +91,34 @@ const Admin = ({ signOut }) => {
       { field: "gamedate", headerName: "Game Date", width: 150 }
   ];
 
-    const textboxStyle = {
-      backgroundColor: 'white',
-      border: `1px solid`,
-      width: Dimensions.get('window').width / 100 * 60,
-      margin: '1rem 0'
-    };
+  const handleToggle = (value, homeoraway) => () => {      
+      setSelectedPlayer(value);
+      setHomeOrAway(homeoraway);    
+  };
+
+  const hStyle = { color: 'orange'};
+
+
+  const hometeamstyle = {
+      'text-align': 'left',
+      width: '45%',
+      color: 'green',
+      'font-size': `18px`
+  }
+
+  const awayteamstyle = {
+      'text-align': 'left',
+      width: '45%',
+      color: 'orange',
+      'font-size': `18px`
+  }
+
+      const textboxStyle = {
+        backgroundColor: 'white',
+        border: `1px solid`,
+        width: Dimensions.get('window').width / 100 * 60,
+        margin: '1rem 0'
+      };
 
     var selectedPlayers = [];
 
@@ -171,6 +214,212 @@ const Admin = ({ signOut }) => {
     },
     ...customCheckbox(theme),
     }));
+
+    function addGoal() {
+
+      if (homeOrAway=="") {
+        return;
+      }      
+
+      if (homeOrAway=="Home"){
+
+        var playersBeforeUpdate = homeTeamPlayers;
+        
+        setCurrentHomeTeamScore(parseInt(currentHomeTeamScore)+1);
+
+        for (var i=0; i< homeTeamPlayers.length;i++){
+          if (selectedPlayer.id == homeTeamPlayers[i].id) {
+            playersBeforeUpdate[i].currGoals++;
+            playersBeforeUpdate[i].currContributions++;
+
+            playersBeforeUpdate[i].allGoals[playersBeforeUpdate[i].gameNum-1] = parseInt(playersBeforeUpdate[i].allGoals[playersBeforeUpdate[i].gameNum-1])+1;
+            playersBeforeUpdate[i].allContributions[playersBeforeUpdate[i].gameNum-1] = parseInt(playersBeforeUpdate[i].allContributions[playersBeforeUpdate[i].gameNum-1])+1;
+          }
+        }      
+      }
+
+      else {
+        var playersBeforeUpdate = awayTeamPlayers;
+        
+        setCurrentAwayTeamScore(parseInt(currentAwayTeamScore)+1);
+
+        for (var i=0; i< awayTeamPlayers.length;i++){
+          if (selectedPlayer.id == awayTeamPlayers[i].id) {
+            playersBeforeUpdate[i].currGoals++;
+            playersBeforeUpdate[i].currContributions++;
+
+            playersBeforeUpdate[i].allGoals[playersBeforeUpdate[i].gameNum-1] = parseInt(playersBeforeUpdate[i].allGoals[playersBeforeUpdate[i].gameNum-1])+1;
+            playersBeforeUpdate[i].allContributions[playersBeforeUpdate[i].gameNum-1] = parseInt(playersBeforeUpdate[i].allContributions[playersBeforeUpdate[i].gameNum-1])+1;
+          }
+        }
+      }      
+    }
+
+    function addAssist() {
+      if (homeOrAway=="") {
+        return;
+      }      
+
+      if (homeOrAway=="Home"){
+
+        var playersBeforeUpdate = homeTeamPlayers;
+        
+        for (var i=0; i< homeTeamPlayers.length;i++){
+          if (selectedPlayer.id == homeTeamPlayers[i].id) {
+            playersBeforeUpdate[i].currAssists++;
+            playersBeforeUpdate[i].currContributions++;
+
+            playersBeforeUpdate[i].allAssists[playersBeforeUpdate[i].gameNum-1] = parseInt(playersBeforeUpdate[i].allAssists[playersBeforeUpdate[i].gameNum-1])+1;
+            playersBeforeUpdate[i].allContributions[playersBeforeUpdate[i].gameNum-1] = parseInt(playersBeforeUpdate[i].allContributions[playersBeforeUpdate[i].gameNum-1])+1;
+          }
+        }
+        forceUpdate();
+      }
+
+      else {
+        var playersBeforeUpdate = awayTeamPlayers;        
+
+        for (var i=0; i< awayTeamPlayers.length;i++){
+          if (selectedPlayer.id == awayTeamPlayers[i].id) {
+            playersBeforeUpdate[i].currAssists++;
+            playersBeforeUpdate[i].currContributions++;
+
+            playersBeforeUpdate[i].allAssists[playersBeforeUpdate[i].gameNum-1] = parseInt(playersBeforeUpdate[i].allAssists[playersBeforeUpdate[i].gameNum-1])+1;
+            playersBeforeUpdate[i].allContributions[playersBeforeUpdate[i].gameNum-1] = parseInt(playersBeforeUpdate[i].allContributions[playersBeforeUpdate[i].gameNum-1])+1;
+          }
+        }
+        forceUpdate();
+      } 
+    }
+
+    function removeGoal(){
+      if (homeOrAway=="") {
+        return;
+      }      
+
+      if (homeOrAway=="Home"){
+
+        var playersBeforeUpdate = homeTeamPlayers;
+        
+        for (var i=0; i< homeTeamPlayers.length;i++){
+          if (selectedPlayer.id == homeTeamPlayers[i].id) {
+
+            if (playersBeforeUpdate[i].currGoals == 0) {
+              return;
+            }
+
+            playersBeforeUpdate[i].currGoals--;
+            playersBeforeUpdate[i].currContributions--;
+
+            playersBeforeUpdate[i].allGoals[playersBeforeUpdate[i].gameNum-1] = parseInt(playersBeforeUpdate[i].allGoals[playersBeforeUpdate[i].gameNum-1])-1;
+            playersBeforeUpdate[i].allContributions[playersBeforeUpdate[i].gameNum-1] = parseInt(playersBeforeUpdate[i].allContributions[playersBeforeUpdate[i].gameNum-1])-1;
+          
+            setCurrentHomeTeamScore(parseInt(currentHomeTeamScore)-1);
+          }
+        }      
+      }
+
+      else {
+        var playersBeforeUpdate = awayTeamPlayers;
+        
+        for (var i=0; i< awayTeamPlayers.length;i++){
+          if (selectedPlayer.id == awayTeamPlayers[i].id) {
+
+            if (playersBeforeUpdate[i].currGoals == 0) {
+              return;
+            }
+
+            playersBeforeUpdate[i].currGoals--;
+            playersBeforeUpdate[i].currContributions--;
+
+            playersBeforeUpdate[i].allGoals[playersBeforeUpdate[i].gameNum-1] = parseInt(playersBeforeUpdate[i].allGoals[playersBeforeUpdate[i].gameNum-1])-1;
+            playersBeforeUpdate[i].allContributions[playersBeforeUpdate[i].gameNum-1] = parseInt(playersBeforeUpdate[i].allContributions[playersBeforeUpdate[i].gameNum-1])-1;
+            
+            setCurrentAwayTeamScore(parseInt(currentAwayTeamScore)-1);
+          }
+        }
+      }
+    }
+
+    function removeAssist() {
+      if (homeOrAway=="") {
+        return;
+      }      
+
+      if (homeOrAway=="Home"){
+
+        var playersBeforeUpdate = homeTeamPlayers;
+        
+        for (var i=0; i< homeTeamPlayers.length;i++){
+          if (selectedPlayer.id == homeTeamPlayers[i].id) {
+
+            if (playersBeforeUpdate[i].currAssists == 0) {
+              return;
+            }
+
+            playersBeforeUpdate[i].currAssists--;
+            playersBeforeUpdate[i].currContributions--;
+
+            playersBeforeUpdate[i].allAssists[playersBeforeUpdate[i].gameNum-1] = parseInt(playersBeforeUpdate[i].allAssists[playersBeforeUpdate[i].gameNum-1])-1;
+            playersBeforeUpdate[i].allContributions[playersBeforeUpdate[i].gameNum-1] = parseInt(playersBeforeUpdate[i].allContributions[playersBeforeUpdate[i].gameNum-1])-1;          
+          }
+        } 
+        forceUpdate();
+      }
+
+      else {
+        var playersBeforeUpdate = awayTeamPlayers;
+        
+        for (var i=0; i< awayTeamPlayers.length;i++){
+          if (selectedPlayer.id == awayTeamPlayers[i].id) {
+
+            if (playersBeforeUpdate[i].currAssists == 0) {
+              return;
+            }
+
+            playersBeforeUpdate[i].currAssists--;
+            playersBeforeUpdate[i].currContributions--;
+
+            playersBeforeUpdate[i].allAssists[playersBeforeUpdate[i].gameNum-1] = parseInt(playersBeforeUpdate[i].allAssists[playersBeforeUpdate[i].gameNum-1])-1;
+            playersBeforeUpdate[i].allContributions[playersBeforeUpdate[i].gameNum-1] = parseInt(playersBeforeUpdate[i].allContributions[playersBeforeUpdate[i].gameNum-1])-1;                        
+          }
+        }
+        forceUpdate();
+      }
+    }
+
+    function SaveMatchEdit() {      
+      //selecteDMatch
+      for (var i=0; i<homeTeamPlayers.length; i++) {
+        console.log(homeTeamPlayers[i].allGoals.toString());
+        /*
+        const informationToUpdate = {
+            id: homeTeamPlayers[i].id,
+            goals: homeTeamPlayers[i].allGoals.toString(),
+            assists: homeTeamPlayers[i].allAssists.toString(),
+            contributions: homeTeamPlayers[i].allContributions.toString()
+        };
+
+        const playerReturned = await API.graphql({ 
+            query: mutations.updateRegisteredPlayers, 
+            variables: { input: informationToUpdate }
+        });
+
+        if (freshStart == false) {
+            fetchCurrentPlayer(playerid, selectedTeam);
+        } 
+        */
+
+      }
+
+      for (var i=0; i<awayTeamPlayers.length; i++) {
+        
+      }
+
+      //update match score
+
+
+    }
 
     async function getReferee(refID) {
       var response = await API.graphql(graphqlOperation(queries.listRefs, { filter: {id: { eq: refID }}}));
@@ -322,8 +571,239 @@ const Admin = ({ signOut }) => {
 
     function deleteMatch() {
       for (var i=0; i<selectedPlayers.length;i++) {
-        removeMatch(selectedPlayers[i]);
+        //removeMatch(selectedPlayers[i]);
       }    
+    }
+
+    function editMatch() {
+      if (selectedPlayers.length>1 || selectedPlayers.length==0) {
+        alert("Please select only one match to edit");
+      }
+      else{
+        populateMatchEdit();
+        setValue(99);
+      }
+    }
+
+    async function populateMatchEdit() {
+      console.log(selectedPlayers[0]);
+
+      // fetch match info
+      var match = await API.graphql(graphqlOperation(queries.getMatches, { id: selectedPlayers[0]}));
+      var homeTeam = match.data.getMatches.hometeam;
+      var awayTeam = match.data.getMatches.awayteam;
+      var homeTeamGameNumber = parseInt(match.data.getMatches.hometeamgamenumber);
+      var awayTeamGameNumber = parseInt(match.data.getMatches.awayteamgamenumber);
+      var season = match.data.getMatches.season;
+      var division = match.data.getMatches.division;            
+
+      setSelectedMatch(match.data.getMatches.id);
+      setCurrentHomeTeamScore(match.data.getMatches.hometeamscore);
+      setCurrentAwayTeamScore(match.data.getMatches.awayteamscore);
+      setHomeTeamName(homeTeam);
+      setAwayTeamName(awayTeam);
+
+      //grab all players for hometeam
+      var apiData = await API.graphql(graphqlOperation(queries.listRegisteredPlayers, {filter: {season: { eq: season }, division: { eq: division }, teamname: {eq: homeTeam}}}));                
+                
+      var homePlayers = apiData.data.listRegisteredPlayers.items;
+
+      var token = apiData.data.listRegisteredPlayers.nextToken;
+  
+      while (token!=null) {
+          var apiData = await API.graphql(graphqlOperation(queries.listRegisteredPlayers, {nextToken: token, filter: {season: { eq: season }, division: { eq: division }, teamname: {eq: homeTeam}}}));                
+          homePlayers.push.apply(homePlayers, apiData.data.listRegisteredPlayers.items);
+          token = apiData.data.listRegisteredPlayers.nextToken;
+      }
+
+      //grab all players for awayteam
+      var apiData = await API.graphql(graphqlOperation(queries.listRegisteredPlayers, {filter: {season: { eq: season }, division: { eq: division }, teamname: {eq: awayTeam}}}));                
+                
+      var awayPlayers = apiData.data.listRegisteredPlayers.items;
+
+      var token = apiData.data.listRegisteredPlayers.nextToken;
+  
+      while (token!=null) {
+          var apiData = await API.graphql(graphqlOperation(queries.listRegisteredPlayers, {nextToken: token, filter: {season: { eq: season }, division: { eq: division }, teamname: {eq: awayTeam}}}));                
+          awayPlayers.push.apply(awayPlayers, apiData.data.listRegisteredPlayers.items);
+          token = apiData.data.listRegisteredPlayers.nextToken;
+      }
+
+
+      var allHomePlayers = [];
+      for (var i=0; i<homePlayers.length;i++){
+        var goalsToList = [];
+        var assistsToList = [];
+        var contributionsToList = [];
+
+        if (homePlayers[i].goals!="" && homePlayers[i].goals!=null)
+          goalsToList = homePlayers[i].goals.split(",");
+        
+        
+        if (homePlayers[i].assists!="" && homePlayers[i].assists!=null)
+          assistsToList = homePlayers[i].assists.split(",");
+        
+        if (homePlayers[i].contributions!="" && homePlayers[i].contributions!=null)
+          contributionsToList = homePlayers[i].contributions.split(",");
+
+        var currentGoals = parseInt(goalsToList[homeTeamGameNumber-1]);
+        var currentAssists = parseInt(assistsToList[homeTeamGameNumber-1]);
+        var currentContributions = parseInt(contributionsToList[homeTeamGameNumber-1]);
+        var person = {id: homePlayers[i].id, firstName: homePlayers[i].firstname, lastName:homePlayers[i].lastname, teamName:homePlayers[i].teamname, currGoals: currentGoals, currAssists: currentAssists, currContributions: currentContributions, gameNum: homeTeamGameNumber, allGoals: goalsToList, allAssists: assistsToList, allContributions: contributionsToList};        
+        allHomePlayers.push(person);
+      }
+
+      setHomeTeamPlayers(allHomePlayers);
+
+      var allAwayPlayers = [];
+      for (var i=0; i<awayPlayers.length;i++){
+        var goalsToList = [];
+        var assistsToList = [];
+        var contributionsToList = [];
+
+        if (awayPlayers[i].goals!="" && awayPlayers[i].goals!=null)
+          goalsToList = awayPlayers[i].goals.split(",");
+        
+        
+        if (awayPlayers[i].assists!="" && awayPlayers[i].assists!=null)
+          assistsToList = awayPlayers[i].assists.split(",");
+        
+
+        if (awayPlayers[i].contributions!="" && awayPlayers[i].contributions!=null)
+          contributionsToList = awayPlayers[i].contributions.split(",");        
+
+
+        var currentGoals = parseInt(goalsToList[awayTeamGameNumber-1]);
+        var currentAssists = parseInt(assistsToList[awayTeamGameNumber-1]);
+        var currentContributions = parseInt(contributionsToList[awayTeamGameNumber-1]);
+        var person = {id: awayPlayers[i].id, firstName: awayPlayers[i].firstname, lastName:awayPlayers[i].lastname, teamName:awayPlayers[i].teamname, currGoals: currentGoals, currAssists: currentAssists, currContributions: currentContributions, gameNum: awayTeamGameNumber, allGoals: goalsToList, allAssists: assistsToList, allContributions: contributionsToList};        
+        allAwayPlayers.push(person);
+      }
+
+      console.log(allAwayPlayers);
+      setAwayTeamPlayers(allAwayPlayers);
+    }
+
+    function displayEditMatch() {
+      return (
+        <View className="Referee">
+          <Heading level={3} style={hStyle}>Score:</Heading>     
+          
+          <Flex direction="row" justifyContent="center"  >                   
+          <Heading level={4} style={hStyle}>{currentHomeTeamScore} - </Heading>
+          <Heading level={4} style={{ color: 'green'}}>{currentAwayTeamScore}</Heading>
+          </Flex>
+
+          <Flex direction="row" justifyContent="center">          
+            <label className="hometeam" style={hometeamstyle}>Home Team: {homeTeamName}</label>
+            <label className="awayteam" style={awayteamstyle}>Away Team: {awayTeamName}</label>
+          </Flex>
+          
+
+          <Flex direction="row" justifyContent="center" >          
+                <List spacing={0} sx={{ item: {padding: 0}, margin: 0, width: '50%', maxWidth: Dimensions.get('window').width/2, bgcolor: 'background.paper', overflow: 'auto', maxHeight: Dimensions.get('window').height/2}}>
+                    {homeTeamPlayers.map((value) => {
+                        return (
+                        <ListItem
+                            key={value.id}                                
+                            disablePadding
+                            sx={{padding: 0.1, margin: 0}}
+                        >
+                            <ListItemButton sx={{padding: 0, margin: 0}} role={undefined} onClick={handleToggle(value, "Home")} dense>
+                            <ListItemIcon sx={{padding: 0.1, margin: 0}}>
+                                <Checkbox
+                                edge="start"
+                                checked={selectedPlayer.id == value.id}
+                                tabIndex={-1}
+                                disableRipple
+                                sx={{padding: 0.5, margin: 0}}
+                                />
+                            </ListItemIcon>
+                            <ListItemText sx={{padding: 0, margin: 0}} primary={`${value.firstName} ${value.lastName} (G: ${value.currGoals} A: ${value.currAssists})`} />
+                            </ListItemButton>
+                        </ListItem>
+                        );
+                    })}
+                </List>
+                <List sx={{item: {padding: 0}, margin: 0, width: '50%', maxWidth: Dimensions.get('window').width/2, bgcolor: 'background.paper', overflow: 'auto', maxHeight: Dimensions.get('window').height/2 }}>
+                    {awayTeamPlayers.map((value) => {
+                        return (
+                            <ListItem
+                                key={value.id}                                
+                                disablePadding
+                                sx={{padding: 0.1, margin: 0}}
+                            >
+                                <ListItemButton sx={{padding: 0, margin: 0}} role={undefined} onClick={handleToggle(value, "Away")} dense>
+                                <ListItemIcon sx={{padding: 0.1, margin: 0}}>
+                                    <Checkbox
+                                    edge="start"
+                                    checked={selectedPlayer.id == value.id}
+                                    tabIndex={-1}
+                                    disableRipple
+                                    sx={{padding: 0.5, margin: 0}}
+                                    />
+                                </ListItemIcon>
+                                <ListItemText sx={{padding: 0, margin: 0}} primary={`${value.firstName} ${value.lastName} (G: ${value.currGoals} A: ${value.currAssists})`} />                                 
+                                </ListItemButton>
+                            </ListItem>
+                        );
+                        })}
+                    </List>
+                </Flex>
+                
+                <div className="single-goal-assists"> 
+                    <Flex direction="row" justifyContent="center">
+                        <Button onClick={addGoal} style={{width: '45%', maxWidth: Dimensions.get('window').width/2.3, backgroundColor: 'green'}} type="submit" variation="primary" >
+                        GOAL
+                        </Button>
+                        <Button onClick={addAssist} style={{width: '45%', maxWidth: Dimensions.get('window').width/2.3}} type="submit" variation="primary" >
+                        ASSIST
+                        </Button>
+                    </Flex>                         
+                </div>   
+                <div className="goal-assists"> 
+                    <Flex direction="row" justifyContent="center">
+                        <Button onClick={removeGoal} style={{width: '3rem', backgroundColor: 'green'}} type="submit" variation="primary" >
+                        -
+                        </Button>
+                        <TextField
+                            name="goals"
+                            placeholder={selectedPlayer.currGoals}
+                            value={selectedPlayer.currGoals}
+                            labelHidden                                
+                            inputStyles={{backgroundColor: 'white', width: '3rem'}}
+                            isReadOnly={true}
+                        />                            
+                        <Button onClick={addGoal} style={{width: '3rem', backgroundColor: 'green'}} type="submit" variation="primary" >
+                        +
+                        </Button>
+
+
+                        <Button onClick={removeAssist} style={{width: '3rem'}} type="submit" variation="primary" >
+                        -
+                        </Button>
+                        <TextField
+                            name="assists"
+                            placeholder={selectedPlayer.currAssists}
+                            value={selectedPlayer.currAssists}
+                            labelHidden                                
+                            inputStyles={{backgroundColor: 'white', width: '3rem'}}
+                            isReadOnly={true}
+                        />
+                        <Button onClick={addAssist} style={{width: '3rem'}} type="submit" variation="primary" >
+                        +
+                        </Button>
+                    </Flex>
+                    <div className="end-match"> 
+                        <Flex direction="row" justifyContent="center">
+                            <Button onClick={SaveMatchEdit} style={{width: '90%', maxWidth: Dimensions.get('window').width/1.1, backgroundColor: 'purple'}} type="submit" variation="primary" >
+                            SAVE MATCH EDIT
+                            </Button>
+                        </Flex>                         
+                    </div>                      
+                </div>           
+        </View>
+      );
     }
 
     function addPlayers() {
@@ -670,6 +1150,7 @@ const Admin = ({ signOut }) => {
                 }}
             />  
             <Button variation="primary" onClick={deleteMatch} style={{ margin: 10, backgroundColor: 'red'}}>Delete Match</Button>
+            <Button variation="primary" onClick={editMatch} style={{ margin: 10, backgroundColor: 'red'}}>Edit Match</Button>
 
           </div>
       );
@@ -808,7 +1289,7 @@ const Admin = ({ signOut }) => {
                     </Tabs>
                 </Box>
                 
-                {value == 0 ? <CalculateStats/> : value == 1 ? removePlayersView() : value == 2 ? addSeasonView() : value == 3 ? addDivisionView() : value == 4 ? manageRefView() : value == 5 ? addTeamView() : value == 6 ? matchHistoryView() : logOut()}              
+                {value == 0 ? <CalculateStats/> : value == 1 ? removePlayersView() : value == 2 ? addSeasonView() : value == 3 ? addDivisionView() : value == 4 ? manageRefView() : value == 5 ? addTeamView() : value == 6 ? matchHistoryView() : value == 99 ? displayEditMatch() : logOut()}              
             </div>
         );
     }
