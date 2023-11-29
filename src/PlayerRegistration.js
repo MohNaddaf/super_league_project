@@ -92,6 +92,8 @@ const PlayerRegistration = ({ signOut }) => {
   }
 
   async function updateTeams(division) {
+    setTimeout(async () => {
+    }, 1000);
     setSelectedDivision(division);        
     fetchTeams(selectedSeason, division);
   }
