@@ -53,11 +53,8 @@ const Admin = ({ signOut }) => {
     const [playerRows, setPlayerRows] = React.useState([]);
     const [matchRows, setMatchRows] = React.useState([]);
     const [selectedSeason, setSelectedSeason] = useState("");    
-    const [currentGoals, setCurrentGoals] = useState(0);
-    const [currentAssists, setCurrentAssists] = useState(0);
     const [currentHomeTeamScore, setCurrentHomeTeamScore] = useState(0);
     const [currentAwayTeamScore, setCurrentAwayTeamScore] = useState(0);
-    const [playerID, setPlayerID] = useState("");
     const [selectedPlayer, setSelectedPlayer] = useState({});
     const [homeTeamPlayers, setHomeTeamPlayers] = useState([]);
     const [awayTeamPlayers, setAwayTeamPlayers] = useState([]);
@@ -388,37 +385,49 @@ const Admin = ({ signOut }) => {
       }
     }
 
-    function SaveMatchEdit() {      
-      //selecteDMatch
+    async function SaveMatchEdit() {      
+
       for (var i=0; i<homeTeamPlayers.length; i++) {
-        console.log(homeTeamPlayers[i].allGoals.toString());
-        /*
         const informationToUpdate = {
             id: homeTeamPlayers[i].id,
             goals: homeTeamPlayers[i].allGoals.toString(),
             assists: homeTeamPlayers[i].allAssists.toString(),
             contributions: homeTeamPlayers[i].allContributions.toString()
         };
-
-        const playerReturned = await API.graphql({ 
+        
+        await API.graphql({ 
             query: mutations.updateRegisteredPlayers, 
             variables: { input: informationToUpdate }
         });
-
-        if (freshStart == false) {
-            fetchCurrentPlayer(playerid, selectedTeam);
-        } 
-        */
-
       }
 
       for (var i=0; i<awayTeamPlayers.length; i++) {
+        const informationToUpdate = {
+            id: awayTeamPlayers[i].id,
+            goals: awayTeamPlayers[i].allGoals.toString(),
+            assists: awayTeamPlayers[i].allAssists.toString(),
+            contributions: awayTeamPlayers[i].allContributions.toString()
+        };
         
+        await API.graphql({ 
+            query: mutations.updateRegisteredPlayers, 
+            variables: { input: informationToUpdate }
+        });
       }
 
       //update match score
+      const updatedMatchInformation = {
+        id: selectedMatch,
+        hometeamscore: currentHomeTeamScore,
+        awayteamscore: currentAwayTeamScore
+      };
 
+      await API.graphql({ 
+        query: mutations.updateMatches, 
+        variables: { input: updatedMatchInformation }
+      });
 
+      window.location.reload();
     }
 
     async function getReferee(refID) {
@@ -570,24 +579,30 @@ const Admin = ({ signOut }) => {
     }
 
     function deleteMatch() {
-      for (var i=0; i<selectedPlayers.length;i++) {
-        //removeMatch(selectedPlayers[i]);
-      }    
+      if (window.confirm("Are you sure that you want to delete this match!")) {
+        for (var i=0; i<selectedPlayers.length;i++) {
+          removeMatch(selectedPlayers[i]);
+        }
+      }
     }
 
-    function editMatch() {
+    async function editMatch() {
       if (selectedPlayers.length>1 || selectedPlayers.length==0) {
         alert("Please select only one match to edit");
       }
       else{
+        var match = await API.graphql(graphqlOperation(queries.getMatches, { id: selectedPlayers[0]}));
+        console.log(match);
+        if (match.data.getMatches.hometeamgamenumber == null || match.data.getMatches.awayteamgamenumber == null) {
+          alert("This match does not support editing. It is missing a gamenumber, most likely since it was recorded from a older season");
+          return;
+        }
         populateMatchEdit();
         setValue(99);
       }
     }
 
     async function populateMatchEdit() {
-      console.log(selectedPlayers[0]);
-
       // fetch match info
       var match = await API.graphql(graphqlOperation(queries.getMatches, { id: selectedPlayers[0]}));
       var homeTeam = match.data.getMatches.hometeam;
@@ -632,19 +647,19 @@ const Admin = ({ signOut }) => {
 
       var allHomePlayers = [];
       for (var i=0; i<homePlayers.length;i++){
-        var goalsToList = [];
-        var assistsToList = [];
-        var contributionsToList = [];
 
-        if (homePlayers[i].goals!="" && homePlayers[i].goals!=null)
-          goalsToList = homePlayers[i].goals.split(",");
-        
-        
-        if (homePlayers[i].assists!="" && homePlayers[i].assists!=null)
-          assistsToList = homePlayers[i].assists.split(",");
-        
-        if (homePlayers[i].contributions!="" && homePlayers[i].contributions!=null)
-          contributionsToList = homePlayers[i].contributions.split(",");
+        if (homePlayers[i].goals=="" || homePlayers[i].goals==null)
+          continue;
+
+        if (homePlayers[i].assists=="" || homePlayers[i].assists==null)
+          continue;
+
+        if (homePlayers[i].contributions=="" || homePlayers[i].contributions==null)
+          continue;
+
+        var goalsToList = homePlayers[i].goals.split(",");
+        var assistsToList = homePlayers[i].assists.split(",");
+        var contributionsToList = homePlayers[i].contributions.split(",");
 
         var currentGoals = parseInt(goalsToList[homeTeamGameNumber-1]);
         var currentAssists = parseInt(assistsToList[homeTeamGameNumber-1]);
@@ -657,20 +672,19 @@ const Admin = ({ signOut }) => {
 
       var allAwayPlayers = [];
       for (var i=0; i<awayPlayers.length;i++){
-        var goalsToList = [];
-        var assistsToList = [];
-        var contributionsToList = [];
 
-        if (awayPlayers[i].goals!="" && awayPlayers[i].goals!=null)
-          goalsToList = awayPlayers[i].goals.split(",");
-        
-        
-        if (awayPlayers[i].assists!="" && awayPlayers[i].assists!=null)
-          assistsToList = awayPlayers[i].assists.split(",");
-        
+        if (awayPlayers[i].goals=="" || awayPlayers[i].goals==null)
+          continue;
 
-        if (awayPlayers[i].contributions!="" && awayPlayers[i].contributions!=null)
-          contributionsToList = awayPlayers[i].contributions.split(",");        
+        if (awayPlayers[i].assists=="" || awayPlayers[i].assists==null)
+          continue;
+
+        if (awayPlayers[i].contributions=="" || awayPlayers[i].contributions==null)
+          continue;
+
+        var goalsToList = awayPlayers[i].goals.split(",");
+        var assistsToList = awayPlayers[i].assists.split(",");
+        var contributionsToList = awayPlayers[i].contributions.split(",");        
 
 
         var currentGoals = parseInt(goalsToList[awayTeamGameNumber-1]);
@@ -680,7 +694,6 @@ const Admin = ({ signOut }) => {
         allAwayPlayers.push(person);
       }
 
-      console.log(allAwayPlayers);
       setAwayTeamPlayers(allAwayPlayers);
     }
 
@@ -1150,7 +1163,7 @@ const Admin = ({ signOut }) => {
                 }}
             />  
             <Button variation="primary" onClick={deleteMatch} style={{ margin: 10, backgroundColor: 'red'}}>Delete Match</Button>
-            <Button variation="primary" onClick={editMatch} style={{ margin: 10, backgroundColor: 'red'}}>Edit Match</Button>
+            <Button variation="primary" onClick={editMatch} style={{ margin: 10, backgroundColor: 'orange'}}>Edit Match</Button>
 
           </div>
       );
