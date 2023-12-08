@@ -681,14 +681,22 @@ const handleToggle = (value, homeoraway) => () => {
         }, 1000);
     }
 
-    async function EndMatch(event) {
-        console.log(homeTeamGamesPlayed);
-        console.log(awayTeamGamesPlayed);
+    async function EndMatch(event) {        
+        var now = new Date();
+
+        // Set the timezone offset for EST (-5 hours)
+        var estOffset = -5 * 60; // -5 hours converted to minutes
+
+        // Calculate the UTC time
+        var estTime = new Date(now.getTime() + estOffset * 60000);
+
+        // Get the day of the month
+        var dayOfMonth = estTime.getUTCDate();
         
         var month = new Date().getUTCMonth() + 1;
-        var day = new Date().getUTCDate();
         var year = new Date().getUTCFullYear();
-        var date = "" + year + "-" + month + "-" + day
+        var date = "" + year + "-" + month + "-" + dayOfMonth;
+        
         const data = {
             hometeam: selectedHomeTeam.teamname,
             awayteam: selectedAwayTeam.teamname,
