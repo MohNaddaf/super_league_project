@@ -51,6 +51,7 @@ import {
 const Admin = ({ signOut }) => {
     const [value, setValue] = React.useState(0);
     const [playerRows, setPlayerRows] = React.useState([]);
+    const [playerInstagramRows, setPlayerInstagramRows] = React.useState([]);
     const [matchRows, setMatchRows] = React.useState([]);
     const [selectedSeason, setSelectedSeason] = useState("");    
     const [currentHomeTeamScore, setCurrentHomeTeamScore] = useState(0);
@@ -73,6 +74,13 @@ const Admin = ({ signOut }) => {
         { field: "division", headerName: "Division", width: 150 },
         { field: "year", headerName: "Year", width: 150 },
         { field: "onroster", headerName: "Is On Roster", width: 150 }
+    ];
+
+    const playerInstagramColumns = [
+      { field: "id", hide: true },
+      { field: "fname", headerName: "First Name", width: 150 },
+      { field: "lname", headerName: "Last Name", width: 150 },
+      { field: "instagramhandle", headerName: "Instagram Handle", width: 150 }
     ];
 
     const matchColumns = [      
@@ -486,13 +494,15 @@ const Admin = ({ signOut }) => {
                 season: player.season,
                 division: player.division,
                 year: player.year,
-                onroster: player.onRoster
+                onroster: player.onRoster,
+                instagramhandle: player.instagramhandle
             }
 
             allRows.push(row);            
         }
 
-        setPlayerRows(allRows);              
+        setPlayerRows(allRows);
+        setPlayerInstagramRows(allRows);
     }            
 
     async function createMatchHistoryTable(matches) {
@@ -924,10 +934,26 @@ const Admin = ({ signOut }) => {
       document.getElementById("allseasonsfordivision").innerHTML = str;
     } 
 
+    function playerInstagramView() {
+      return (
+        <div style={{ height: Dimensions.get('window').height, width: "100%" }}>
+            <StyledDataGrid onRowSelectionModelChange={handleRowSelection} checkboxSelection disableColumnFilter disableColumnMenu disableDensitySelector disableColumnSelector rows={playerInstagramRows} columns={playerInstagramColumns} slots={{ toolbar: GridToolbar }}
+                slotProps={{                    
+                    toolbar: {
+                        showQuickFilter: true,
+                        printOptions: { disableToolbarButton: true },
+                        csvOptions: { disableToolbarButton: true },
+                        quickFilterProps: { debounceMs: 250 },
+                    },
+                }}
+            />
+        </div>
+      );
+    }
 
     function removePlayersView() {
       return (
-        <div style={{ height: Dimensions.get('window').height / 100 * 60, width: "100%" }}>
+        <div style={{ height: Dimensions.get('window').height / 100 * 85, width: "100%" }}>
             <StyledDataGrid onRowSelectionModelChange={handleRowSelection} checkboxSelection disableColumnFilter disableColumnMenu disableDensitySelector disableColumnSelector rows={playerRows} columns={playerColumns} slots={{ toolbar: GridToolbar }}
                 slotProps={{                    
                     toolbar: {                        
@@ -1293,6 +1319,7 @@ const Admin = ({ signOut }) => {
                     <Tabs value={value} onChange={handleChange} aria-label="nav tabs example">                        
                         <LinkTab label="Calculate Player Stats"/>
                         <LinkTab label="Remove Players"/>
+                        <LinkTab label="Player Instagrams"/>
                         <LinkTab label="Add Season"/>
                         <LinkTab label="Add Division"/>
                         <LinkTab label="Add Referees"/>
@@ -1302,7 +1329,7 @@ const Admin = ({ signOut }) => {
                     </Tabs>
                 </Box>
                 
-                {value == 0 ? <CalculateStats/> : value == 1 ? removePlayersView() : value == 2 ? addSeasonView() : value == 3 ? addDivisionView() : value == 4 ? manageRefView() : value == 5 ? addTeamView() : value == 6 ? matchHistoryView() : value == 99 ? displayEditMatch() : logOut()}              
+                {value == 0 ? <CalculateStats/> : value == 1 ? removePlayersView() : value == 2 ? playerInstagramView() : value == 3 ? addSeasonView() : value == 4 ? addDivisionView() : value == 5 ? manageRefView() : value == 6 ? addTeamView() : value == 7 ? matchHistoryView() : value == 99 ? displayEditMatch() : logOut()}              
             </div>
         );
     }
