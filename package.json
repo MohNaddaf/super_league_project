@@ -22,7 +22,7 @@
     "react": "^18.2.0",
     "react-bootstrap": "^2.8.0",
     "react-dom": "^18.2.0",
-    "react-hook-form": "^7.45.4",
+    "react-hook-form": "^7.49.0",
     "react-native": "^0.72.4",
     "react-native-web": "^0.19.7",
     "react-phone-input-2": "^2.15.1",
