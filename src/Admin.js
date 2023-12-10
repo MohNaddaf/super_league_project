@@ -538,11 +538,11 @@ const Admin = ({ signOut }) => {
         ) {
           setValue(newValue);
 
-          if (newValue==5) {            
+          if (newValue==6) {            
             fetchSeasons();
             fetchDivisions();
           }   
-          if (newValue==3) {            
+          if (newValue==4) {            
             fetchSeasonsForDivision();
           }       
         }
@@ -1054,7 +1054,6 @@ const Admin = ({ signOut }) => {
                 required
                 inputStyles={textboxStyle}
               />
-
             </Flex>
 
             <Flex direction="row" justifyContent="center" >
