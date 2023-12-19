@@ -14,9 +14,10 @@ import {
   TextField,
 } from "@aws-amplify/ui-react";
 import { fetchByPath, getOverrideProps, validateField } from "./utils";
-import { API } from "aws-amplify";
+import { generateClient } from "aws-amplify/api";
 import { getRegisteredPlayers } from "../graphql/queries";
 import { updateRegisteredPlayers } from "../graphql/mutations";
+const client = generateClient();
 export default function RegisteredPlayersUpdateForm(props) {
   const {
     id: idProp,
@@ -49,7 +50,9 @@ export default function RegisteredPlayersUpdateForm(props) {
     totalcontributions: "",
     year: "",
     onRoster: false,
-    suspendeduntilgamenumber: "",
+    suspendedUntilGameNumber: "",
+    yellowCards: "",
+    redCards: "",
   };
   const [firstname, setFirstname] = React.useState(initialValues.firstname);
   const [lastname, setLastname] = React.useState(initialValues.lastname);
@@ -80,8 +83,12 @@ export default function RegisteredPlayersUpdateForm(props) {
   );
   const [year, setYear] = React.useState(initialValues.year);
   const [onRoster, setOnRoster] = React.useState(initialValues.onRoster);
-  const [suspendeduntilgamenumber, setSuspendeduntilgamenumber] =
-    React.useState(initialValues.suspendeduntilgamenumber);
+  const [suspendedUntilGameNumber, setSuspendedUntilGameNumber] =
+    React.useState(initialValues.suspendedUntilGameNumber);
+  const [yellowCards, setYellowCards] = React.useState(
+    initialValues.yellowCards
+  );
+  const [redCards, setRedCards] = React.useState(initialValues.redCards);
   const [errors, setErrors] = React.useState({});
   const resetStateValues = () => {
     const cleanValues = registeredPlayersRecord
@@ -106,7 +113,9 @@ export default function RegisteredPlayersUpdateForm(props) {
     setTotalcontributions(cleanValues.totalcontributions);
     setYear(cleanValues.year);
     setOnRoster(cleanValues.onRoster);
-    setSuspendeduntilgamenumber(cleanValues.suspendeduntilgamenumber);
+    setSuspendedUntilGameNumber(cleanValues.suspendedUntilGameNumber);
+    setYellowCards(cleanValues.yellowCards);
+    setRedCards(cleanValues.redCards);
     setErrors({});
   };
   const [registeredPlayersRecord, setRegisteredPlayersRecord] = React.useState(
@@ -116,7 +125,7 @@ export default function RegisteredPlayersUpdateForm(props) {
     const queryData = async () => {
       const record = idProp
         ? (
-            await API.graphql({
+            await client.graphql({
               query: getRegisteredPlayers.replaceAll("__typename", ""),
               variables: { id: idProp },
             })
@@ -147,7 +156,9 @@ export default function RegisteredPlayersUpdateForm(props) {
     totalcontributions: [],
     year: [],
     onRoster: [],
-    suspendeduntilgamenumber: [],
+    suspendedUntilGameNumber: [],
+    yellowCards: [],
+    redCards: [],
   };
   const runValidationTasks = async (
     fieldName,
@@ -194,7 +205,9 @@ export default function RegisteredPlayersUpdateForm(props) {
           totalcontributions: totalcontributions ?? null,
           year: year ?? null,
           onRoster: onRoster ?? null,
-          suspendeduntilgamenumber: suspendeduntilgamenumber ?? null,
+          suspendedUntilGameNumber: suspendedUntilGameNumber ?? null,
+          yellowCards: yellowCards ?? null,
+          redCards: redCards ?? null,
         };
         const validationResponses = await Promise.all(
           Object.keys(validations).reduce((promises, fieldName) => {
@@ -224,7 +237,7 @@ export default function RegisteredPlayersUpdateForm(props) {
               modelFields[key] = null;
             }
           });
-          await API.graphql({
+          await client.graphql({
             query: updateRegisteredPlayers.replaceAll("__typename", ""),
             variables: {
               input: {
@@ -274,7 +287,9 @@ export default function RegisteredPlayersUpdateForm(props) {
               totalcontributions,
               year,
               onRoster,
-              suspendeduntilgamenumber,
+              suspendedUntilGameNumber,
+              yellowCards,
+              redCards,
             };
             const result = onChange(modelFields);
             value = result?.firstname ?? value;
@@ -317,7 +332,9 @@ export default function RegisteredPlayersUpdateForm(props) {
               totalcontributions,
               year,
               onRoster,
-              suspendeduntilgamenumber,
+              suspendedUntilGameNumber,
+              yellowCards,
+              redCards,
             };
             const result = onChange(modelFields);
             value = result?.lastname ?? value;
@@ -360,7 +377,9 @@ export default function RegisteredPlayersUpdateForm(props) {
               totalcontributions,
               year,
               onRoster,
-              suspendeduntilgamenumber,
+              suspendedUntilGameNumber,
+              yellowCards,
+              redCards,
             };
             const result = onChange(modelFields);
             value = result?.teamname ?? value;
@@ -403,7 +422,9 @@ export default function RegisteredPlayersUpdateForm(props) {
               totalcontributions,
               year,
               onRoster,
-              suspendeduntilgamenumber,
+              suspendedUntilGameNumber,
+              yellowCards,
+              redCards,
             };
             const result = onChange(modelFields);
             value = result?.division ?? value;
@@ -446,7 +467,9 @@ export default function RegisteredPlayersUpdateForm(props) {
               totalcontributions,
               year,
               onRoster,
-              suspendeduntilgamenumber,
+              suspendedUntilGameNumber,
+              yellowCards,
+              redCards,
             };
             const result = onChange(modelFields);
             value = result?.season ?? value;
@@ -489,7 +512,9 @@ export default function RegisteredPlayersUpdateForm(props) {
               totalcontributions,
               year,
               onRoster,
-              suspendeduntilgamenumber,
+              suspendedUntilGameNumber,
+              yellowCards,
+              redCards,
             };
             const result = onChange(modelFields);
             value = result?.position ?? value;
@@ -532,7 +557,9 @@ export default function RegisteredPlayersUpdateForm(props) {
               totalcontributions,
               year,
               onRoster,
-              suspendeduntilgamenumber,
+              suspendedUntilGameNumber,
+              yellowCards,
+              redCards,
             };
             const result = onChange(modelFields);
             value = result?.captain ?? value;
@@ -575,7 +602,9 @@ export default function RegisteredPlayersUpdateForm(props) {
               totalcontributions,
               year,
               onRoster,
-              suspendeduntilgamenumber,
+              suspendedUntilGameNumber,
+              yellowCards,
+              redCards,
             };
             const result = onChange(modelFields);
             value = result?.email ?? value;
@@ -618,7 +647,9 @@ export default function RegisteredPlayersUpdateForm(props) {
               totalcontributions,
               year,
               onRoster,
-              suspendeduntilgamenumber,
+              suspendedUntilGameNumber,
+              yellowCards,
+              redCards,
             };
             const result = onChange(modelFields);
             value = result?.phonenumber ?? value;
@@ -661,7 +692,9 @@ export default function RegisteredPlayersUpdateForm(props) {
               totalcontributions,
               year,
               onRoster,
-              suspendeduntilgamenumber,
+              suspendedUntilGameNumber,
+              yellowCards,
+              redCards,
             };
             const result = onChange(modelFields);
             value = result?.instagramhandle ?? value;
@@ -704,7 +737,9 @@ export default function RegisteredPlayersUpdateForm(props) {
               totalcontributions,
               year,
               onRoster,
-              suspendeduntilgamenumber,
+              suspendedUntilGameNumber,
+              yellowCards,
+              redCards,
             };
             const result = onChange(modelFields);
             value = result?.teamid ?? value;
@@ -747,7 +782,9 @@ export default function RegisteredPlayersUpdateForm(props) {
               totalcontributions,
               year,
               onRoster,
-              suspendeduntilgamenumber,
+              suspendedUntilGameNumber,
+              yellowCards,
+              redCards,
             };
             const result = onChange(modelFields);
             value = result?.goals ?? value;
@@ -790,7 +827,9 @@ export default function RegisteredPlayersUpdateForm(props) {
               totalcontributions,
               year,
               onRoster,
-              suspendeduntilgamenumber,
+              suspendedUntilGameNumber,
+              yellowCards,
+              redCards,
             };
             const result = onChange(modelFields);
             value = result?.assists ?? value;
@@ -833,7 +872,9 @@ export default function RegisteredPlayersUpdateForm(props) {
               totalcontributions,
               year,
               onRoster,
-              suspendeduntilgamenumber,
+              suspendedUntilGameNumber,
+              yellowCards,
+              redCards,
             };
             const result = onChange(modelFields);
             value = result?.contributions ?? value;
@@ -880,7 +921,9 @@ export default function RegisteredPlayersUpdateForm(props) {
               totalcontributions,
               year,
               onRoster,
-              suspendeduntilgamenumber,
+              suspendedUntilGameNumber,
+              yellowCards,
+              redCards,
             };
             const result = onChange(modelFields);
             value = result?.totalgoals ?? value;
@@ -927,7 +970,9 @@ export default function RegisteredPlayersUpdateForm(props) {
               totalcontributions,
               year,
               onRoster,
-              suspendeduntilgamenumber,
+              suspendedUntilGameNumber,
+              yellowCards,
+              redCards,
             };
             const result = onChange(modelFields);
             value = result?.totalassists ?? value;
@@ -974,7 +1019,9 @@ export default function RegisteredPlayersUpdateForm(props) {
               totalcontributions: value,
               year,
               onRoster,
-              suspendeduntilgamenumber,
+              suspendedUntilGameNumber,
+              yellowCards,
+              redCards,
             };
             const result = onChange(modelFields);
             value = result?.totalcontributions ?? value;
@@ -1019,7 +1066,9 @@ export default function RegisteredPlayersUpdateForm(props) {
               totalcontributions,
               year: value,
               onRoster,
-              suspendeduntilgamenumber,
+              suspendedUntilGameNumber,
+              yellowCards,
+              redCards,
             };
             const result = onChange(modelFields);
             value = result?.year ?? value;
@@ -1062,7 +1111,9 @@ export default function RegisteredPlayersUpdateForm(props) {
               totalcontributions,
               year,
               onRoster: value,
-              suspendeduntilgamenumber,
+              suspendedUntilGameNumber,
+              yellowCards,
+              redCards,
             };
             const result = onChange(modelFields);
             value = result?.onRoster ?? value;
@@ -1078,12 +1129,12 @@ export default function RegisteredPlayersUpdateForm(props) {
         {...getOverrideProps(overrides, "onRoster")}
       ></SwitchField>
       <TextField
-        label="Suspendeduntilgamenumber"
+        label="Suspended until game number"
         isRequired={false}
         isReadOnly={false}
         type="number"
         step="any"
-        value={suspendeduntilgamenumber}
+        value={suspendedUntilGameNumber}
         onChange={(e) => {
           let value = isNaN(parseInt(e.target.value))
             ? e.target.value
@@ -1109,25 +1160,117 @@ export default function RegisteredPlayersUpdateForm(props) {
               totalcontributions,
               year,
               onRoster,
-              suspendeduntilgamenumber: value,
+              suspendedUntilGameNumber: value,
+              yellowCards,
+              redCards,
             };
             const result = onChange(modelFields);
-            value = result?.suspendeduntilgamenumber ?? value;
+            value = result?.suspendedUntilGameNumber ?? value;
           }
-          if (errors.suspendeduntilgamenumber?.hasError) {
-            runValidationTasks("suspendeduntilgamenumber", value);
+          if (errors.suspendedUntilGameNumber?.hasError) {
+            runValidationTasks("suspendedUntilGameNumber", value);
           }
-          setSuspendeduntilgamenumber(value);
+          setSuspendedUntilGameNumber(value);
         }}
         onBlur={() =>
           runValidationTasks(
-            "suspendeduntilgamenumber",
-            suspendeduntilgamenumber
+            "suspendedUntilGameNumber",
+            suspendedUntilGameNumber
           )
         }
-        errorMessage={errors.suspendeduntilgamenumber?.errorMessage}
-        hasError={errors.suspendeduntilgamenumber?.hasError}
-        {...getOverrideProps(overrides, "suspendeduntilgamenumber")}
+        errorMessage={errors.suspendedUntilGameNumber?.errorMessage}
+        hasError={errors.suspendedUntilGameNumber?.hasError}
+        {...getOverrideProps(overrides, "suspendedUntilGameNumber")}
+      ></TextField>
+      <TextField
+        label="Yellow cards"
+        isRequired={false}
+        isReadOnly={false}
+        value={yellowCards}
+        onChange={(e) => {
+          let { value } = e.target;
+          if (onChange) {
+            const modelFields = {
+              firstname,
+              lastname,
+              teamname,
+              division,
+              season,
+              position,
+              captain,
+              email,
+              phonenumber,
+              instagramhandle,
+              teamid,
+              goals,
+              assists,
+              contributions,
+              totalgoals,
+              totalassists,
+              totalcontributions,
+              year,
+              onRoster,
+              suspendedUntilGameNumber,
+              yellowCards: value,
+              redCards,
+            };
+            const result = onChange(modelFields);
+            value = result?.yellowCards ?? value;
+          }
+          if (errors.yellowCards?.hasError) {
+            runValidationTasks("yellowCards", value);
+          }
+          setYellowCards(value);
+        }}
+        onBlur={() => runValidationTasks("yellowCards", yellowCards)}
+        errorMessage={errors.yellowCards?.errorMessage}
+        hasError={errors.yellowCards?.hasError}
+        {...getOverrideProps(overrides, "yellowCards")}
+      ></TextField>
+      <TextField
+        label="Red cards"
+        isRequired={false}
+        isReadOnly={false}
+        value={redCards}
+        onChange={(e) => {
+          let { value } = e.target;
+          if (onChange) {
+            const modelFields = {
+              firstname,
+              lastname,
+              teamname,
+              division,
+              season,
+              position,
+              captain,
+              email,
+              phonenumber,
+              instagramhandle,
+              teamid,
+              goals,
+              assists,
+              contributions,
+              totalgoals,
+              totalassists,
+              totalcontributions,
+              year,
+              onRoster,
+              suspendedUntilGameNumber,
+              yellowCards,
+              redCards: value,
+            };
+            const result = onChange(modelFields);
+            value = result?.redCards ?? value;
+          }
+          if (errors.redCards?.hasError) {
+            runValidationTasks("redCards", value);
+          }
+          setRedCards(value);
+        }}
+        onBlur={() => runValidationTasks("redCards", redCards)}
+        errorMessage={errors.redCards?.errorMessage}
+        hasError={errors.redCards?.hasError}
+        {...getOverrideProps(overrides, "redCards")}
       ></TextField>
       <Flex
         justifyContent="space-between"

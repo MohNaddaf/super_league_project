@@ -1,6 +1,36 @@
 /* eslint-disable */
 // this is an auto generated file. This will be overwritten
 
+export const getSuspension = /* GraphQL */ `
+  query GetSuspension($id: ID!) {
+    getSuspension(id: $id) {
+      id
+      suspensionGameLength
+      createdAt
+      updatedAt
+      __typename
+    }
+  }
+`;
+export const listSuspensions = /* GraphQL */ `
+  query ListSuspensions(
+    $filter: ModelSuspensionFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    listSuspensions(filter: $filter, limit: $limit, nextToken: $nextToken) {
+      items {
+        id
+        suspensionGameLength
+        createdAt
+        updatedAt
+        __typename
+      }
+      nextToken
+      __typename
+    }
+  }
+`;
 export const getDivisions = /* GraphQL */ `
   query GetDivisions($id: ID!) {
     getDivisions(id: $id) {
@@ -182,7 +212,9 @@ export const getRegisteredPlayers = /* GraphQL */ `
       totalcontributions
       year
       onRoster
-      suspendeduntilgamenumber
+      suspendedUntilGameNumber
+      yellowCards
+      redCards
       createdAt
       updatedAt
       __typename
@@ -221,7 +253,9 @@ export const listRegisteredPlayers = /* GraphQL */ `
         totalcontributions
         year
         onRoster
-        suspendeduntilgamenumber
+        suspendedUntilGameNumber
+        yellowCards
+        redCards
         createdAt
         updatedAt
         __typename

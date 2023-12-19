@@ -2,5 +2,5 @@
   "AppSyncApiName": "superleagueproject",
   "DynamoDBBillingMode": "PAY_PER_REQUEST",
   "DynamoDBEnableServerSideEncryption": false,
-  "AuthModeLastUpdated": "2023-11-15T23:06:42.861Z"
+  "AuthModeLastUpdated": "2023-12-19T22:41:33.239Z"
 }

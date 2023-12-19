@@ -1,3 +1,8 @@
+type Suspension @model @auth(rules: [{allow: public}]) {
+  id: ID!
+  suspensionGameLength: Int
+}
+
 type Divisions @model @auth(rules: [{allow: public}]) {
   id: ID!
   season: ID
@@ -58,7 +63,9 @@ type RegisteredPlayers @model @auth(rules: [{allow: public}]) {
   totalcontributions: Int
   year: String
   onRoster: Boolean
-  suspendeduntilgamenumber: Int
+  suspendedUntilGameNumber: Int
+  yellowCards: String
+  redCards: String
 }
 
 type RegisteredTeams @model @auth(rules: [{allow: public}]) {

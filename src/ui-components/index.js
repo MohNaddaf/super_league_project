@@ -16,4 +16,6 @@ export { default as RegisteredTeamsCreateForm } from "./RegisteredTeamsCreateFor
 export { default as RegisteredTeamsUpdateForm } from "./RegisteredTeamsUpdateForm";
 export { default as SeasonsCreateForm } from "./SeasonsCreateForm";
 export { default as SeasonsUpdateForm } from "./SeasonsUpdateForm";
+export { default as SuspensionCreateForm } from "./SuspensionCreateForm";
+export { default as SuspensionUpdateForm } from "./SuspensionUpdateForm";
 export { default as studioTheme } from "./studioTheme";

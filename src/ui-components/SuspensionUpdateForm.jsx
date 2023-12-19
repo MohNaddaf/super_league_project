@@ -9,11 +9,13 @@ import * as React from "react";
 import { Button, Flex, Grid, TextField } from "@aws-amplify/ui-react";
 import { fetchByPath, getOverrideProps, validateField } from "./utils";
 import { generateClient } from "aws-amplify/api";
-import { createDivisions } from "../graphql/mutations";
+import { getSuspension } from "../graphql/queries";
+import { updateSuspension } from "../graphql/mutations";
 const client = generateClient();
-export default function DivisionsCreateForm(props) {
+export default function SuspensionUpdateForm(props) {
   const {
-    clearOnSuccess = true,
+    id: idProp,
+    suspension: suspensionModelProp,
     onSuccess,
     onError,
     onSubmit,
@@ -23,24 +25,38 @@ export default function DivisionsCreateForm(props) {
     ...rest
   } = props;
   const initialValues = {
-    season: "",
-    division: "",
-    year: "",
+    suspensionGameLength: "",
   };
-  const [season, setSeason] = React.useState(initialValues.season);
-  const [division, setDivision] = React.useState(initialValues.division);
-  const [year, setYear] = React.useState(initialValues.year);
+  const [suspensionGameLength, setSuspensionGameLength] = React.useState(
+    initialValues.suspensionGameLength
+  );
   const [errors, setErrors] = React.useState({});
   const resetStateValues = () => {
-    setSeason(initialValues.season);
-    setDivision(initialValues.division);
-    setYear(initialValues.year);
+    const cleanValues = suspensionRecord
+      ? { ...initialValues, ...suspensionRecord }
+      : initialValues;
+    setSuspensionGameLength(cleanValues.suspensionGameLength);
     setErrors({});
   };
+  const [suspensionRecord, setSuspensionRecord] =
+    React.useState(suspensionModelProp);
+  React.useEffect(() => {
+    const queryData = async () => {
+      const record = idProp
+        ? (
+            await client.graphql({
+              query: getSuspension.replaceAll("__typename", ""),
+              variables: { id: idProp },
+            })
+          )?.data?.getSuspension
+        : suspensionModelProp;
+      setSuspensionRecord(record);
+    };
+    queryData();
+  }, [idProp, suspensionModelProp]);
+  React.useEffect(resetStateValues, [suspensionRecord]);
   const validations = {
-    season: [],
-    division: [],
-    year: [],
+    suspensionGameLength: [],
   };
   const runValidationTasks = async (
     fieldName,
@@ -68,9 +84,7 @@ export default function DivisionsCreateForm(props) {
       onSubmit={async (event) => {
         event.preventDefault();
         let modelFields = {
-          season,
-          division,
-          year,
+          suspensionGameLength: suspensionGameLength ?? null,
         };
         const validationResponses = await Promise.all(
           Object.keys(validations).reduce((promises, fieldName) => {
@@ -101,18 +115,16 @@ export default function DivisionsCreateForm(props) {
             }
           });
           await client.graphql({
-            query: createDivisions.replaceAll("__typename", ""),
+            query: updateSuspension.replaceAll("__typename", ""),
             variables: {
               input: {
+                id: suspensionRecord.id,
                 ...modelFields,
               },
             },
           });
           if (onSuccess) {
             onSuccess(modelFields);
-          }
-          if (clearOnSuccess) {
-            resetStateValues();
           }
         } catch (err) {
           if (onError) {
@@ -121,99 +133,52 @@ export default function DivisionsCreateForm(props) {
           }
         }
       }}
-      {...getOverrideProps(overrides, "DivisionsCreateForm")}
+      {...getOverrideProps(overrides, "SuspensionUpdateForm")}
       {...rest}
     >
       <TextField
-        label="Season"
+        label="Suspension game length"
         isRequired={false}
         isReadOnly={false}
-        value={season}
+        type="number"
+        step="any"
+        value={suspensionGameLength}
         onChange={(e) => {
-          let { value } = e.target;
+          let value = isNaN(parseInt(e.target.value))
+            ? e.target.value
+            : parseInt(e.target.value);
           if (onChange) {
             const modelFields = {
-              season: value,
-              division,
-              year,
+              suspensionGameLength: value,
             };
             const result = onChange(modelFields);
-            value = result?.season ?? value;
+            value = result?.suspensionGameLength ?? value;
           }
-          if (errors.season?.hasError) {
-            runValidationTasks("season", value);
+          if (errors.suspensionGameLength?.hasError) {
+            runValidationTasks("suspensionGameLength", value);
           }
-          setSeason(value);
+          setSuspensionGameLength(value);
         }}
-        onBlur={() => runValidationTasks("season", season)}
-        errorMessage={errors.season?.errorMessage}
-        hasError={errors.season?.hasError}
-        {...getOverrideProps(overrides, "season")}
-      ></TextField>
-      <TextField
-        label="Division"
-        isRequired={false}
-        isReadOnly={false}
-        value={division}
-        onChange={(e) => {
-          let { value } = e.target;
-          if (onChange) {
-            const modelFields = {
-              season,
-              division: value,
-              year,
-            };
-            const result = onChange(modelFields);
-            value = result?.division ?? value;
-          }
-          if (errors.division?.hasError) {
-            runValidationTasks("division", value);
-          }
-          setDivision(value);
-        }}
-        onBlur={() => runValidationTasks("division", division)}
-        errorMessage={errors.division?.errorMessage}
-        hasError={errors.division?.hasError}
-        {...getOverrideProps(overrides, "division")}
-      ></TextField>
-      <TextField
-        label="Year"
-        isRequired={false}
-        isReadOnly={false}
-        value={year}
-        onChange={(e) => {
-          let { value } = e.target;
-          if (onChange) {
-            const modelFields = {
-              season,
-              division,
-              year: value,
-            };
-            const result = onChange(modelFields);
-            value = result?.year ?? value;
-          }
-          if (errors.year?.hasError) {
-            runValidationTasks("year", value);
-          }
-          setYear(value);
-        }}
-        onBlur={() => runValidationTasks("year", year)}
-        errorMessage={errors.year?.errorMessage}
-        hasError={errors.year?.hasError}
-        {...getOverrideProps(overrides, "year")}
+        onBlur={() =>
+          runValidationTasks("suspensionGameLength", suspensionGameLength)
+        }
+        errorMessage={errors.suspensionGameLength?.errorMessage}
+        hasError={errors.suspensionGameLength?.hasError}
+        {...getOverrideProps(overrides, "suspensionGameLength")}
       ></TextField>
       <Flex
         justifyContent="space-between"
         {...getOverrideProps(overrides, "CTAFlex")}
       >
         <Button
-          children="Clear"
+          children="Reset"
           type="reset"
           onClick={(event) => {
             event.preventDefault();
             resetStateValues();
           }}
-          {...getOverrideProps(overrides, "ClearButton")}
+          isDisabled={!(idProp || suspensionModelProp)}
+          {...getOverrideProps(overrides, "ResetButton")}
         ></Button>
         <Flex
           gap="15px"
@@ -223,7 +188,10 @@ export default function DivisionsCreateForm(props) {
             children="Submit"
             type="submit"
             variation="primary"
-            isDisabled={Object.values(errors).some((e) => e?.hasError)}
+            isDisabled={
+              !(idProp || suspensionModelProp) ||
+              Object.values(errors).some((e) => e?.hasError)
+            }
             {...getOverrideProps(overrides, "SubmitButton")}
           ></Button>
         </Flex>

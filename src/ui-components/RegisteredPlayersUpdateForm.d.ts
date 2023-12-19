@@ -41,7 +41,9 @@ export declare type RegisteredPlayersUpdateFormInputValues = {
     totalcontributions?: number;
     year?: string;
     onRoster?: boolean;
-    suspendeduntilgamenumber?: number;
+    suspendedUntilGameNumber?: number;
+    yellowCards?: string;
+    redCards?: string;
 };
 export declare type RegisteredPlayersUpdateFormValidationValues = {
     firstname?: ValidationFunction<string>;
@@ -63,7 +65,9 @@ export declare type RegisteredPlayersUpdateFormValidationValues = {
     totalcontributions?: ValidationFunction<number>;
     year?: ValidationFunction<string>;
     onRoster?: ValidationFunction<boolean>;
-    suspendeduntilgamenumber?: ValidationFunction<number>;
+    suspendedUntilGameNumber?: ValidationFunction<number>;
+    yellowCards?: ValidationFunction<string>;
+    redCards?: ValidationFunction<string>;
 };
 export declare type PrimitiveOverrideProps<T> = Partial<T> & React.DOMAttributes<HTMLDivElement>;
 export declare type RegisteredPlayersUpdateFormOverridesProps = {
@@ -87,7 +91,9 @@ export declare type RegisteredPlayersUpdateFormOverridesProps = {
     totalcontributions?: PrimitiveOverrideProps<TextFieldProps>;
     year?: PrimitiveOverrideProps<TextFieldProps>;
     onRoster?: PrimitiveOverrideProps<SwitchFieldProps>;
-    suspendeduntilgamenumber?: PrimitiveOverrideProps<TextFieldProps>;
+    suspendedUntilGameNumber?: PrimitiveOverrideProps<TextFieldProps>;
+    yellowCards?: PrimitiveOverrideProps<TextFieldProps>;
+    redCards?: PrimitiveOverrideProps<TextFieldProps>;
 } & EscapeHatchProps;
 export declare type RegisteredPlayersUpdateFormProps = React.PropsWithChildren<{
     overrides?: RegisteredPlayersUpdateFormOverridesProps | undefined | null;

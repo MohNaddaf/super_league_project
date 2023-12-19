@@ -8,9 +8,10 @@
 import * as React from "react";
 import { Button, Flex, Grid, TextField } from "@aws-amplify/ui-react";
 import { fetchByPath, getOverrideProps, validateField } from "./utils";
-import { API } from "aws-amplify";
+import { generateClient } from "aws-amplify/api";
 import { getRegisteredTeams } from "../graphql/queries";
 import { updateRegisteredTeams } from "../graphql/mutations";
+const client = generateClient();
 export default function RegisteredTeamsUpdateForm(props) {
   const {
     id: idProp,
@@ -56,7 +57,7 @@ export default function RegisteredTeamsUpdateForm(props) {
     const queryData = async () => {
       const record = idProp
         ? (
-            await API.graphql({
+            await client.graphql({
               query: getRegisteredTeams.replaceAll("__typename", ""),
               variables: { id: idProp },
             })
@@ -134,7 +135,7 @@ export default function RegisteredTeamsUpdateForm(props) {
               modelFields[key] = null;
             }
           });
-          await API.graphql({
+          await client.graphql({
             query: updateRegisteredTeams.replaceAll("__typename", ""),
             variables: {
               input: {

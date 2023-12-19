@@ -1,6 +1,48 @@
 /* eslint-disable */
 // this is an auto generated file. This will be overwritten
 
+export const createSuspension = /* GraphQL */ `
+  mutation CreateSuspension(
+    $input: CreateSuspensionInput!
+    $condition: ModelSuspensionConditionInput
+  ) {
+    createSuspension(input: $input, condition: $condition) {
+      id
+      suspensionGameLength
+      createdAt
+      updatedAt
+      __typename
+    }
+  }
+`;
+export const updateSuspension = /* GraphQL */ `
+  mutation UpdateSuspension(
+    $input: UpdateSuspensionInput!
+    $condition: ModelSuspensionConditionInput
+  ) {
+    updateSuspension(input: $input, condition: $condition) {
+      id
+      suspensionGameLength
+      createdAt
+      updatedAt
+      __typename
+    }
+  }
+`;
+export const deleteSuspension = /* GraphQL */ `
+  mutation DeleteSuspension(
+    $input: DeleteSuspensionInput!
+    $condition: ModelSuspensionConditionInput
+  ) {
+    deleteSuspension(input: $input, condition: $condition) {
+      id
+      suspensionGameLength
+      createdAt
+      updatedAt
+      __typename
+    }
+  }
+`;
 export const createDivisions = /* GraphQL */ `
   mutation CreateDivisions(
     $input: CreateDivisionsInput!
@@ -252,7 +294,9 @@ export const createRegisteredPlayers = /* GraphQL */ `
       totalcontributions
       year
       onRoster
-      suspendeduntilgamenumber
+      suspendedUntilGameNumber
+      yellowCards
+      redCards
       createdAt
       updatedAt
       __typename
@@ -285,7 +329,9 @@ export const updateRegisteredPlayers = /* GraphQL */ `
       totalcontributions
       year
       onRoster
-      suspendeduntilgamenumber
+      suspendedUntilGameNumber
+      yellowCards
+      redCards
       createdAt
       updatedAt
       __typename
@@ -318,7 +364,9 @@ export const deleteRegisteredPlayers = /* GraphQL */ `
       totalcontributions
       year
       onRoster
-      suspendeduntilgamenumber
+      suspendedUntilGameNumber
+      yellowCards
+      redCards
       createdAt
       updatedAt
       __typename

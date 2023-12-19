@@ -1,6 +1,45 @@
 /* eslint-disable */
 // this is an auto generated file. This will be overwritten
 
+export const onCreateSuspension = /* GraphQL */ `
+  subscription OnCreateSuspension(
+    $filter: ModelSubscriptionSuspensionFilterInput
+  ) {
+    onCreateSuspension(filter: $filter) {
+      id
+      suspensionGameLength
+      createdAt
+      updatedAt
+      __typename
+    }
+  }
+`;
+export const onUpdateSuspension = /* GraphQL */ `
+  subscription OnUpdateSuspension(
+    $filter: ModelSubscriptionSuspensionFilterInput
+  ) {
+    onUpdateSuspension(filter: $filter) {
+      id
+      suspensionGameLength
+      createdAt
+      updatedAt
+      __typename
+    }
+  }
+`;
+export const onDeleteSuspension = /* GraphQL */ `
+  subscription OnDeleteSuspension(
+    $filter: ModelSubscriptionSuspensionFilterInput
+  ) {
+    onDeleteSuspension(filter: $filter) {
+      id
+      suspensionGameLength
+      createdAt
+      updatedAt
+      __typename
+    }
+  }
+`;
 export const onCreateDivisions = /* GraphQL */ `
   subscription OnCreateDivisions(
     $filter: ModelSubscriptionDivisionsFilterInput
@@ -221,7 +260,9 @@ export const onCreateRegisteredPlayers = /* GraphQL */ `
       totalcontributions
       year
       onRoster
-      suspendeduntilgamenumber
+      suspendedUntilGameNumber
+      yellowCards
+      redCards
       createdAt
       updatedAt
       __typename
@@ -253,7 +294,9 @@ export const onUpdateRegisteredPlayers = /* GraphQL */ `
       totalcontributions
       year
       onRoster
-      suspendeduntilgamenumber
+      suspendedUntilGameNumber
+      yellowCards
+      redCards
       createdAt
       updatedAt
       __typename
@@ -285,7 +328,9 @@ export const onDeleteRegisteredPlayers = /* GraphQL */ `
       totalcontributions
       year
       onRoster
-      suspendeduntilgamenumber
+      suspendedUntilGameNumber
+      yellowCards
+      redCards
       createdAt
       updatedAt
       __typename
