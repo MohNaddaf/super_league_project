@@ -27,7 +27,11 @@
   }   
 
   div.single-goal-assists {
-    margin-top: 2rem;  
+    margin-top: 1rem;  
+  }
+
+  div.red-yellow-cards {
+    margin-top: 1rem;  
   }
 
   div.goal-assists {

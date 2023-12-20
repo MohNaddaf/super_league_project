@@ -47,6 +47,7 @@ const [currentGoals, setCurrentGoals] = useState(0);
 const [currentAssists, setCurrentAssists] = useState(0);
 const [currentHomeTeamScore, setCurrentHomeTeamScore] = useState(0);
 const [currentAwayTeamScore, setCurrentAwayTeamScore] = useState(0);
+const [suspensionLength, setSuspensionLength] = useState(0);
 
 const divisionMapping = {
     "PREM" : 0,
@@ -89,7 +90,8 @@ const handleToggle = (value, homeoraway) => () => {
         fetchRefs();
         fetchSeasons();
         fetchDivisions();
-        fetchTeams();            
+        fetchTeams();
+        fetchSuspensionLength();           
     }, []);
 
     async function beginReffing(event) {
@@ -111,6 +113,12 @@ const handleToggle = (value, homeoraway) => () => {
             fetchPlayers();
             setIsReffing(true);              
         }    
+    }
+
+    async function fetchSuspensionLength() {    
+        var apiData = await API.graphql(graphqlOperation(queries.listSuspensions));            
+        const suspensionInfo = apiData.data.listSuspensions.items;
+        setSuspensionLength(suspensionInfo[0].suspensionGameLength);
     }
 
     async function fetchTeams(season, division) {    
@@ -216,15 +224,25 @@ const handleToggle = (value, homeoraway) => () => {
             var player=players[i];
 
             var higherDiv = await doesPlayerPlayInHigherDivision(player);
+            var suspended = false;
+
+
+            if (player.hasOwnProperty("suspendedUntilGameNumber")) {
+                if (homeTeamGamesPlayed+1 < player.suspendedUntilGameNumber) {
+                    suspended = true;
+                }
+            }
             
             var playerToAdd = {
                 id: player.id,
                 firstname: player.firstname,
                 lastname: player.lastname,
-                onHigherDiv: higherDiv
+                onHigherDiv: higherDiv,
+                isSuspended: suspended
             };
             allPlayers.push(playerToAdd);
         }
+
         setHomeTeamPlayers(allPlayers);        
     }
 
@@ -235,12 +253,21 @@ const handleToggle = (value, homeoraway) => () => {
             var player=players[i];
 
             var higherDiv = await doesPlayerPlayInHigherDivision(player);
+            var suspended = false;
+
+
+            if (player.hasOwnProperty("suspendedUntilGameNumber")) {
+                if (awayTeamGamesPlayed+1 < player.suspendedUntilGameNumber) {
+                    suspended = true;
+                }
+            }
             
             var playerToAdd = {
                 id: player.id,
                 firstname: player.firstname,
                 lastname: player.lastname,
-                onHigherDiv: higherDiv
+                onHigherDiv: higherDiv,
+                isSuspended: suspended
             };
             allPlayers.push(playerToAdd);
         }
@@ -739,6 +766,49 @@ const handleToggle = (value, homeoraway) => () => {
         window.location.reload();
     }
 
+    async function addRedCard(event) {
+        if(Object.keys(currentPlayer).length==0){
+            return;
+        }
+
+
+        var gameNumber = selectedTeam == "Home" ? homeTeamGamesPlayed : awayTeamGamesPlayed;
+        var playerID = currentPlayer.id;
+        var suspendedUntil = gameNumber + suspensionLength + 2;
+
+        if (currentPlayer.hasOwnProperty("suspendedUntilGameNumber")) {
+            if (currentPlayer.suspendedUntilGameNumber == suspendedUntil) {
+                alert("Red card has already been applied.");
+                return;
+            }
+        }
+
+        const informationToUpdate = {
+            id: playerID,
+            suspendedUntilGameNumber: suspendedUntil
+        };
+        
+        const playerReturned = await API.graphql({ 
+            query: mutations.updateRegisteredPlayers, 
+            variables: { input: informationToUpdate }
+        });
+
+        fetchCurrentPlayer(playerID, selectedTeam);
+        
+        alert("Red card applied successfully");
+
+        //Current game number for team is homeTeamGamesPlayed + 1.
+        // Suspend Until (homeTeamGamesPlayed + 1) + (suspensionLength+1)
+
+        //When checking check if (homeTeamGamesPlayed + 1) <= suspensionUntilGameNumber
+
+
+    }
+
+    async function addYellowCard(event) {
+        console.log(selectedTeam);
+    }
+
     function beginReffingMatch() {  
         return (
             <View className="Referee">
@@ -774,7 +844,7 @@ const handleToggle = (value, homeoraway) => () => {
                                     sx={{padding: 0.5, margin: 0}}
                                     />
                                 </ListItemIcon>
-                                {value.onHigherDiv == true ? <ListItemText sx={{padding: 0, margin: 0, color: 'red'}} primary={`${value.firstname} ${value.lastname}`} /> : <ListItemText sx={{padding: 0, margin: 0}} primary={`${value.firstname} ${value.lastname}`} />}
+                                {(value.onHigherDiv == true) || (value.isSuspended) ? <ListItemText sx={{padding: 0, margin: 0, color: 'red'}} primary={`${value.firstname} ${value.lastname}`} /> : <ListItemText sx={{padding: 0, margin: 0}} primary={`${value.firstname} ${value.lastname}`} />}
                                 </ListItemButton>
                             </ListItem>
                             );
@@ -798,7 +868,7 @@ const handleToggle = (value, homeoraway) => () => {
                                         sx={{padding: 0.5, margin: 0}}
                                         />
                                     </ListItemIcon>
-                                    {value.onHigherDiv == true ? <ListItemText sx={{padding: 0, margin: 0, color: 'red'}} primary={`${value.firstname} ${value.lastname}`} /> : <ListItemText sx={{padding: 0, margin: 0}} primary={`${value.firstname} ${value.lastname}`} />}                                    
+                                    {(value.onHigherDiv == true) || (value.isSuspended) ? <ListItemText sx={{padding: 0, margin: 0, color: 'red'}} primary={`${value.firstname} ${value.lastname}`} /> : <ListItemText sx={{padding: 0, margin: 0}} primary={`${value.firstname} ${value.lastname}`} />}                                    
                                     </ListItemButton>
                                 </ListItem>
                             );
@@ -806,6 +876,14 @@ const handleToggle = (value, homeoraway) => () => {
                         </List>
                     </Flex>
                     
+                        
+                    <div className="red-yellow-cards"> 
+                        <Flex direction="row" justifyContent="center">
+                            <Button onClick={addRedCard} style={{width: '90%', maxWidth: Dimensions.get('window').width/2.3, backgroundColor: 'red'}} type="submit" variation="primary" >
+                            RED CARD
+                            </Button>
+                        </Flex>                         
+                    </div>
                     <div className="single-goal-assists"> 
                         <Flex direction="row" justifyContent="center">
                             <Button onClick={addGoal} style={{width: '45%', maxWidth: Dimensions.get('window').width/2.3, backgroundColor: 'green'}} type="submit" variation="primary" >
@@ -815,7 +893,7 @@ const handleToggle = (value, homeoraway) => () => {
                             ASSIST
                             </Button>
                         </Flex>                         
-                    </div>   
+                    </div>
                     <div className="goal-assists"> 
                         <Flex direction="row" justifyContent="center">
                             <Button onClick={removeGoal} style={{width: '3rem', backgroundColor: 'green'}} type="submit" variation="primary" >
