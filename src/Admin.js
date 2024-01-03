@@ -880,7 +880,7 @@ const Admin = ({ signOut }) => {
   }
 
     async function fetchSeasons() {
-      API.graphql(graphqlOperation(listSeasons, { filter: { year: { eq: new Date().getFullYear() }}})).then((response) => {
+      API.graphql(graphqlOperation(listSeasons, { filter: { isseasonactive: { eq: true }}})).then((response) => {
         const seasonsFromAPI = response.data.listSeasons.items;            
         createSeasons(seasonsFromAPI);      
       });    
@@ -892,7 +892,7 @@ const Admin = ({ signOut }) => {
           return;
       }
       else{            
-          apiData = await API.graphql(graphqlOperation(queries.listDivisions, { filter: { season: { eq: season }, year: { eq: new Date().getFullYear() }}}));
+          apiData = await API.graphql(graphqlOperation(queries.listDivisions, { filter: { season: { eq: season }}}));
       }
       
       const divisionsFromApi = apiData.data.listDivisions.items;

@@ -134,7 +134,7 @@ const handleToggle = (value, homeoraway) => () => {
         }
         else{     
             setSelectedDivision(division);                  
-            apiData = await API.graphql(graphqlOperation(queries.listRegisteredTeams, { filter: { season: { eq: season }, divison: { eq: division }, year: { eq: new Date().getFullYear() }}}));            
+            apiData = await API.graphql(graphqlOperation(queries.listRegisteredTeams, { filter: { season: { eq: season }, divison: { eq: division }}})); 
         }
     
         const teamsFromAPI = apiData.data.listRegisteredTeams.items;
@@ -151,7 +151,7 @@ const handleToggle = (value, homeoraway) => () => {
     }
 
     async function fetchSeasons() {
-        API.graphql(graphqlOperation(listSeasons, { filter: { year: { eq: new Date().getFullYear() }}})).then((response) => {
+        API.graphql(graphqlOperation(listSeasons, { filter: { isseasonactive: { eq: true }}})).then((response) => {
             const seasonsFromAPI = response.data.listSeasons.items;
             setSeasons(seasonsFromAPI);      
             createSeasons(seasonsFromAPI);      
@@ -164,7 +164,7 @@ const handleToggle = (value, homeoraway) => () => {
             return;
         }
         else{            
-            apiData = await API.graphql(graphqlOperation(queries.listDivisions, { filter: { season: { eq: season }, year: { eq: new Date().getFullYear() }}}));
+            apiData = await API.graphql(graphqlOperation(queries.listDivisions, { filter: { season: { eq: season }}}));
         }
         
         const divisionsFromApi = apiData.data.listDivisions.items;
@@ -311,26 +311,20 @@ const handleToggle = (value, homeoraway) => () => {
 
     async function createHomeTeams(teams){    
         var str="<option value=0>SELECT HOME TEAM</option>";
-        var currentYear = new Date().getFullYear();
         for (var i = 0; i < teams.length; i++){
             var team = teams[i];
             var division = (await API.graphql(graphqlOperation(queries.getDivisions, { id: team.divison}))).data.getDivisions;
-            if (currentYear == team.year){
-                str+="<option value=" + team.id + ">" + team.teamname + " - " + division.division + " - " + new Date().getFullYear() + "</option>";      
-            }
+            str+="<option value=" + team.id + ">" + team.teamname + " - " + division.division  + "</option>";      
         }
         document.getElementById("allteamshome").innerHTML = str;         
     }
 
     async function createAwayTeams(teams){    
         var str="<option value=0>SELECT AWAY TEAM</option>";
-        var currentYear = new Date().getFullYear();
         for (var i = 0; i < teams.length; i++){
             var team = teams[i];
             var division = (await API.graphql(graphqlOperation(queries.getDivisions, { id: team.divison}))).data.getDivisions;
-            if (currentYear == team.year){
-                str+="<option value=" + team.id + ">" + team.teamname + " - " + division.division + " - " + new Date().getFullYear() + "</option>";      
-            }
+            str+="<option value=" + team.id + ">" + team.teamname + " - " + division.division + "</option>";      
         }
         document.getElementById("allteamsaway").innerHTML = str;         
     }

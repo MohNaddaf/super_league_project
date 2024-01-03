@@ -53,7 +53,7 @@ const Rosters = ({ signOut }) => {
     }, []);
    
     async function fetchSeasons() {
-        API.graphql(graphqlOperation(listSeasons, { filter: { year: { eq: new Date().getFullYear() }}})).then((response) => {
+        API.graphql(graphqlOperation(listSeasons, { filter: { isseasonactive: { eq: true }}})).then((response) => {
             const seasonsFromAPI = response.data.listSeasons.items;
             createSeasons(seasonsFromAPI);      
         });    
@@ -65,7 +65,7 @@ const Rosters = ({ signOut }) => {
             return;
         }
         else{            
-            apiData = await API.graphql(graphqlOperation(queries.listDivisions, { filter: { season: { eq: season }, year: { eq: new Date().getFullYear() }}}));
+            apiData = await API.graphql(graphqlOperation(queries.listDivisions, { filter: { season: { eq: season }}}));
         }
         
         const divisionsFromApi = apiData.data.listDivisions.items;
@@ -78,17 +78,17 @@ const Rosters = ({ signOut }) => {
     
         if (season==undefined || season=="") {
             if (division==undefined || division==""){
-              apiData = await API.graphql(graphqlOperation(queries.listRegisteredTeams, { filter: { year: { eq: new Date().getFullYear() }}}));
+              return;
             }
             else{
-              apiData = await API.graphql(graphqlOperation(queries.listRegisteredTeams, { filter: { divison: { eq: division }, year: { eq: new Date().getFullYear() }}}));
+              apiData = await API.graphql(graphqlOperation(queries.listRegisteredTeams, { filter: { divison: { eq: division }}}));
             }
         }
         else if (division==undefined || division=="") {
-          apiData = await API.graphql(graphqlOperation(queries.listRegisteredTeams, { filter: { season: { eq: season }, year: { eq: new Date().getFullYear() }}}));
+          apiData = await API.graphql(graphqlOperation(queries.listRegisteredTeams, { filter: { season: { eq: season } }}));
         }
         else{
-            apiData = await API.graphql(graphqlOperation(queries.listRegisteredTeams, { filter: { season: { eq: season }, divison: { eq: division }, year: { eq: new Date().getFullYear() }}}));
+            apiData = await API.graphql(graphqlOperation(queries.listRegisteredTeams, { filter: { season: { eq: season }, divison: { eq: division }}}));
         }
     
         const teamsFromAPI = apiData.data.listRegisteredTeams.items;

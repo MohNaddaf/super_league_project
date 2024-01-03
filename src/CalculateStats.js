@@ -186,7 +186,7 @@ const CalculateStats = ({ signOut }) => {
           return;
         }
         else{            
-          apiData = await API.graphql(graphqlOperation(queries.listDivisions, { filter: { season: { eq: season }, year: { eq: new Date().getFullYear() }}}));
+          apiData = await API.graphql(graphqlOperation(queries.listDivisions, { filter: { season: { eq: season }}}));
         }
         
         const divisionsFromApi = apiData.data.listDivisions.items;

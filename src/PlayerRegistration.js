@@ -55,7 +55,7 @@ const PlayerRegistration = ({ signOut }) => {
       return;
     }
     else{
-        apiData = await API.graphql(graphqlOperation(queries.listRegisteredTeams, { filter: { season: { eq: season }, divison: { eq: division }, year: { eq: new Date().getFullYear() }}}));
+        apiData = await API.graphql(graphqlOperation(queries.listRegisteredTeams, { filter: { season: { eq: season }, divison: { eq: division }}}));
     }
 
     const teamsFromAPI = apiData.data.listRegisteredTeams.items;
@@ -64,7 +64,7 @@ const PlayerRegistration = ({ signOut }) => {
   }  
 
   async function fetchSeasons() {
-    API.graphql(graphqlOperation(listSeasons, { filter: { year: { eq: new Date().getFullYear() }, isseasonactive: { eq: true }}})).then((response) => {
+    API.graphql(graphqlOperation(listSeasons, { filter: { isseasonactive: { eq: true }}})).then((response) => {
       const seasonsFromAPI = response.data.listSeasons.items;
       setSeasons(seasonsFromAPI);      
       createSeasons(seasonsFromAPI);      
@@ -77,7 +77,7 @@ const PlayerRegistration = ({ signOut }) => {
       return;
     }
     else{            
-      apiData = await API.graphql(graphqlOperation(queries.listDivisions, { filter: { season: { eq: season }, year: { eq: new Date().getFullYear() }}}));
+      apiData = await API.graphql(graphqlOperation(queries.listDivisions, { filter: { season: { eq: season }}}));
     }
     
     const divisionsFromApi = apiData.data.listDivisions.items;
