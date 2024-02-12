@@ -31,9 +31,12 @@ const [divisions, setDivisions] = useState([]);
 const [selectedSeason, setSelectedSeason] = useState("");
 const [selectedDivision, setSelectedDivision] = useState("");
 const [currentRef, setCurrentRef] = useState("");
+const [selectedDivisionName, setSelectedDivisionName] = useState("");
 const [selectedTeam, setSelectedTeam] = useState("");
 const [homeTeamPlayers, setHomeTeamPlayers] = useState([]);
 const [awayTeamPlayers, setAwayTeamPlayers] = useState([]);
+const [divisionsForSeason, setDivisionsForSeason] = useState([]);
+const [divisionMappingForSeason, setDivisionMappingForSeason] = useState({});
 const [homeTeamGamesPlayed, setHomeTeamGamesPlayed] = useState(0);
 const [awayTeamGamesPlayed, setAwayTeamGamesPlayed] = useState(0);
 const [isReffing, setIsReffing] = useState(false);
@@ -91,7 +94,7 @@ const handleToggle = (value, homeoraway) => () => {
         fetchSeasons();
         fetchDivisions();
         fetchTeams();
-        fetchSuspensionLength();           
+        fetchSuspensionLength();    
     }, []);
 
     async function beginReffing(event) {
@@ -109,9 +112,10 @@ const handleToggle = (value, homeoraway) => () => {
             alert("Please choose two different teams!");      
         }
         else{
+            var mapping = await fetchDivisionsForSeason(season);
             setCurrentRef(ref);
-            fetchPlayers();
-            setIsReffing(true);              
+            fetchPlayers(mapping);
+            setIsReffing(true);         
         }    
     }
 
@@ -133,7 +137,9 @@ const handleToggle = (value, homeoraway) => () => {
           return;
         }
         else{     
-            setSelectedDivision(division);                  
+            setSelectedDivision(division);
+            var divisionName = (await API.graphql(graphqlOperation(queries.getDivisions, { id: division}))).data.getDivisions;
+            setSelectedDivisionName(divisionName.division);     
             apiData = await API.graphql(graphqlOperation(queries.listRegisteredTeams, { filter: { season: { eq: season }, divison: { eq: division }}})); 
         }
     
@@ -186,7 +192,32 @@ const handleToggle = (value, homeoraway) => () => {
         });
     }
 
-    async function fetchPlayers() {            
+    async function fetchDivisionsForSeason(season) {        
+        var apiData = await API.graphql(graphqlOperation(queries.listDivisions, { filter: { season: { eq: season }}}));               
+        
+        const divisionsFromApi = apiData.data.listDivisions.items;
+            
+        setDivisionsForSeason(divisionsFromApi);
+
+        var mapping = {}        
+
+        for (var div of divisionsFromApi) {
+            for (var map in divisionMapping) {                                                
+                if (div.division.toLowerCase().includes(map.toLowerCase())) {
+                    var mapToAdd = {
+                        divPriority: divisionMapping[map],
+                        divId: div.id
+                    }
+                    mapping[div.division] = mapToAdd;                    
+                }                
+            }
+        }
+        
+        setDivisionMappingForSeason(mapping);
+        return mapping;
+    }
+
+    async function fetchPlayers(mapping) {            
         API.graphql(graphqlOperation(queries.listRegisteredPlayers, { filter: { teamid: { eq: homeTeamID }, onRoster: { eq: true }}})).then(async (response) => {
             const homeTeamPlayersFromAPI = response.data.listRegisteredPlayers.items;
             var token = response.data.listRegisteredPlayers.nextToken;
@@ -197,7 +228,7 @@ const handleToggle = (value, homeoraway) => () => {
                 token = results.data.listRegisteredPlayers.nextToken;
             }  
             
-            setHomePlayers(homeTeamPlayersFromAPI);
+            await setHomePlayers(homeTeamPlayersFromAPI, mapping);
             setPlayerStatsGameStart(homeTeamPlayersFromAPI, homeTeamGamesPlayed, true); 
         });  
 
@@ -212,18 +243,18 @@ const handleToggle = (value, homeoraway) => () => {
                 token = results.data.listRegisteredPlayers.nextToken;
             }
 
-            setAwayPlayers(awayTeamPlayersFromAPI);
+            await setAwayPlayers(awayTeamPlayersFromAPI, mapping);
             setPlayerStatsGameStart(awayTeamPlayersFromAPI, awayTeamGamesPlayed, false);         
         });        
     }
 
-    async function setHomePlayers(players) {
+    async function setHomePlayers(players, mapping) {
         var allPlayers = [];
 
         for (var i=0; i<players.length;i++) {
             var player=players[i];
 
-            var higherDiv = await doesPlayerPlayInHigherDivision(player);
+            var higherDiv = await doesPlayerPlayInHigherDivision(player, mapping);
             var suspended = false;
 
 
@@ -246,13 +277,13 @@ const handleToggle = (value, homeoraway) => () => {
         setHomeTeamPlayers(allPlayers);        
     }
 
-    async function setAwayPlayers(players) {
+    async function setAwayPlayers(players, mapping) {
         var allPlayers = [];
 
         for (var i=0; i<players.length;i++) {
             var player=players[i];
 
-            var higherDiv = await doesPlayerPlayInHigherDivision(player);
+            var higherDiv = await doesPlayerPlayInHigherDivision(player, mapping);
             var suspended = false;
 
 
@@ -274,21 +305,32 @@ const handleToggle = (value, homeoraway) => () => {
         setAwayTeamPlayers(allPlayers);        
     }
 
-    async function doesPlayerPlayInHigherDivision(player) {            
+    async function doesPlayerPlayInHigherDivision(player, mapping) {
            var playsHigher = false;
-            /*
-            for (var div in divisionMapping){
-                if (divisionMapping[div] < divisionMapping[player.division]){
-                    await API.graphql(graphqlOperation(queries.listRegisteredPlayers, { filter: { season: { eq: player.season }, division: { eq: div }, year: { eq: player.year }, firstname: { eq: player.firstname }, lastname: { eq: player.lastname }}})).then((response) => {
-                        const playerResults = response.data.listRegisteredPlayers.items;
-                        if (playerResults.length > 0){
-                            playsHigher = true;
-                        }
-                    });
+
+            if (!(selectedDivisionName in mapping)) {
+                return false;
+            }
+            
+            for (var div in mapping){
+                if (mapping[div].divPriority < mapping[selectedDivisionName].divPriority){                    
+                    var response = await API.graphql(graphqlOperation(queries.listRegisteredPlayers, { filter: { season: { eq: player.season }, division: { eq: mapping[div].divId }, year: { eq: player.year }, firstname: { eq: player.firstname }, lastname: { eq: player.lastname }}}));
+                    const playerResults = response.data.listRegisteredPlayers.items;                    
+                    var token = response.data.listRegisteredPlayers.nextToken;
+
+                    while (token!=null) {
+                        var results = await API.graphql(graphqlOperation(queries.listRegisteredPlayers, {nextToken:token, filter: { season: { eq: player.season }, division: { eq: mapping[div].divId }, year: { eq: player.year }, firstname: { eq: player.firstname }, lastname: { eq: player.lastname }}}));
+                        playerResults.push.apply(playerResults, results.data.listRegisteredPlayers.items);
+                        token = results.data.listRegisteredPlayers.nextToken;
+                    }
+                    
+                    if (playerResults.length > 0){
+                        playsHigher = true;
+                    }                    
                 }
             }
-            */
-            return playsHigher;           
+
+            return playsHigher;
     }
 
     function createSeasons(seasons){    
