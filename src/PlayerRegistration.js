@@ -47,7 +47,7 @@ const PlayerRegistration = ({ signOut }) => {
 
   async function fetchTeams(season, division) {    
     var apiData = {};
-    let teamsFromApi = [];
+    let teamsFromApi = []; 
 
     if (season==undefined || season=="") {
         return;
