@@ -75,20 +75,32 @@ const Rosters = ({ signOut }) => {
 
     async function fetchTeams(season, division) {    
         var apiData = {};
-    
+        let teamsFromApi = [];
+        let filter = {};
+
         if (season==undefined || season=="") {
             if (division==undefined || division==""){
               return;
             }
             else{
-              apiData = await API.graphql(graphqlOperation(queries.listRegisteredTeams, { filter: { divison: { eq: division }}}));
+              filter = { divison: { eq: division }};
             }
         }
         else if (division==undefined || division=="") {
-          apiData = await API.graphql(graphqlOperation(queries.listRegisteredTeams, { filter: { season: { eq: season } }}));
+            filter = { season: { eq: season } };
         }
         else{
-            apiData = await API.graphql(graphqlOperation(queries.listRegisteredTeams, { filter: { season: { eq: season }, divison: { eq: division }}}));
+            filter = { season: { eq: season }, divison: { eq: division }};
+        }
+
+        apiData = await API.graphql(graphqlOperation(queries.listRegisteredTeams, { filter: filter}));
+        teamsFromApi = apiData.data.listRegisteredTeams.items;                    
+        var token = apiData.data.listRegisteredTeams.nextToken;
+
+        while (token!=null) {
+            var results = await API.graphql(graphqlOperation(queries.listRegisteredTeams, {nextToken:token, filter: filter}));
+            teamsFromApi.push.apply(teamsFromApi, results.data.listRegisteredTeams.items);
+            token = results.data.listRegisteredTeams.nextToken;
         }
     
         const teamsFromAPI = apiData.data.listRegisteredTeams.items;
