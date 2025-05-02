@@ -47,6 +47,7 @@ const PlayerRegistration = ({ signOut }) => {
 
   async function fetchTeams(season, division) {    
     var apiData = {};
+    let teamsFromApi = [];
 
     if (season==undefined || season=="") {
         return;
@@ -56,6 +57,15 @@ const PlayerRegistration = ({ signOut }) => {
     }
     else{
         apiData = await API.graphql(graphqlOperation(queries.listRegisteredTeams, { filter: { season: { eq: season }, divison: { eq: division }}}));
+        teamsFromApi = apiData.data.listRegisteredTeams.items;                    
+        var token = apiData.data.listRegisteredTeams.nextToken;
+
+        while (token!=null) {
+            var results = await API.graphql(graphqlOperation(queries.listRegisteredTeams, {nextToken:token, filter: { season: { eq: season }, divison: { eq: division }}}));
+            teamsFromApi.push.apply(teamsFromApi, results.data.listRegisteredTeams.items);
+            token = results.data.listRegisteredTeams.nextToken;
+        }
+      
     }
 
     const teamsFromAPI = apiData.data.listRegisteredTeams.items;
